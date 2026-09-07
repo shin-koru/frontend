@@ -2,7 +2,7 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StorageService {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -18,5 +18,9 @@ export class StorageService {
       return localStorage.getItem(key);
     }
     return null;
+  }
+
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
   }
 }

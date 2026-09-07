@@ -5,6 +5,8 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { MessageService } from 'primeng/api';
 import { GlobalErrorHandler } from './core/handler/global-error.handler';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,5 +19,6 @@ export const appConfig: ApplicationConfig = {
     }),
     MessageService,
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    provideHttpClient(withInterceptors([authInterceptor]))
   ],
 };
