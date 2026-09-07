@@ -1,18 +1,6 @@
-<main class="main">
-  <div class="content">
-    <p-button label="Check" />
-  </div>
-</main>
-
-<style>
-  main {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: inherit;
-    position: relative;
-  }
-</style>
+<router-outlet></router-outlet>
+<p-toast
+  key="toast"
+  showTransitionOptions="250ms ease-out cubic-bezier(0, 0, 0.2, 1)"
+  hideTransitionOptions="150ms ease-in cubic-bezier(0.4, 0, 1, 1)"
+/>
