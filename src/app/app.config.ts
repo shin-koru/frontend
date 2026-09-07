@@ -4,7 +4,7 @@ import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { MessageService } from 'primeng/api';
-import { GlobalErrorHandler } from '../core/handler/global-error.handler';
+import { GlobalErrorHandler } from './core/handler/global-error.handler';
 
 export const appConfig: ApplicationConfig = {
   providers: [
