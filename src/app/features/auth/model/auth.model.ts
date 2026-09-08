@@ -1,9 +1,11 @@
 export interface OtpRequest {
   identifier: string;
-  type: 'phone' | 'email';
+  type: AuthIdentifierType;
   code: string | null;
 }
 
 export interface TokenResponse {
   accessToken: string;
 }
+
+export type AuthIdentifierType = 'phone' | 'email';

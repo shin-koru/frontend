@@ -4,10 +4,12 @@ import { OtpRequest, TokenResponse } from '../model/auth.model';
 import { Observable } from 'rxjs';
 import { OKResponse } from '../../../shared';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthApi {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/auth';
+  private readonly baseUrl = '/api/auth';
 
   sendOtp(req: OtpRequest): Observable<OKResponse> {
     return this.http.post<OKResponse>(`${this.baseUrl}/otp/send`, req);
