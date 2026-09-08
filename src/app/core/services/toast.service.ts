@@ -24,4 +24,12 @@ export class ToastService {
   public showErrorToast(detail?: string) {
     this.showToast('error', 'Error', detail);
   }
+
+  public showInfoToast(detail?: string) {
+    this.showToast('info', 'Info', detail);
+  }
+
+  public showWarnToast(detail?: string) {
+    this.showToast('warn', 'Warn', detail);
+  }
 }

@@ -1,0 +1,46 @@
+<div class="login-container">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-3">
+    <div class="field">
+      <p-selectbutton
+        [options]="typeOptions"
+        formControlName="type"
+        optionLabel="label"
+        optionValue="value"
+      >
+      </p-selectbutton>
+    </div>
+
+    <!-- Поле ввода Identifier -->
+    <div class="field flex flex-column gap-1">
+      <label for="identifier">
+        {{ loginForm.value.type === 'email' ? 'Электронная почта' : 'Номер телефона' }}
+      </label>
+
+      <input
+        pInputText
+        id="identifier"
+        formControlName="identifier"
+        [placeholder]="loginForm.value.type === 'email' ? 'example@mail.com' : '+77001234567'"
+      />
+
+      <!-- Ошибки валидации -->
+      @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) {
+        <small class="p-error">
+          @if (loginForm.controls.identifier.errors?.['required']) {
+            Поле обязательно для заполнения.
+          }
+          @if (loginForm.controls.identifier.errors?.['email']) {
+            Введите корректный Email.
+          }
+          @if (loginForm.controls.identifier.errors?.['pattern']) {
+            Введите корректный номер телефона (например, +77001234567).
+          }
+        </small>
+      }
+    </div>
+
+    <!-- Кнопка отправки -->
+    <p-button type="submit" label="Получить код" [loading]="(loading$ | async) ?? false">
+    </p-button>
+  </form>
+</div>
