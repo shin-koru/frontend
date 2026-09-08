@@ -1,0 +1,51 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>User details</h1>
+      <p class="page-subtitle">Read-only view of the selected account.</p>
+    </div>
+    <div class="actions">
+      <p-button label="Back" [outlined]="true" (onClick)="goToList()" />
+      @if (user()) {
+        <p-button label="Edit" (onClick)="editUser()" />
+        <p-button label="Delete" severity="danger" [outlined]="true" (onClick)="confirmDelete()" />
+      }
+    </div>
+  </header>
+
+  @if (loading() && !user()) {
+    <p>Loading user...</p>
+  } @else if (!user()) {
+    <p>User not found.</p>
+  } @else {
+    <dl class="details">
+      <div>
+        <dt>Username</dt>
+        <dd>{{ user()!.username }}</dd>
+      </div>
+      <div>
+        <dt>Name</dt>
+        <dd>{{ user()!.firstName }} {{ user()!.lastName }}</dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd>{{ user()!.email }}</dd>
+      </div>
+      <div>
+        <dt>Role</dt>
+        <dd>
+          <p-tag [value]="user()!.role" [severity]="user()!.role === 'admin' ? 'danger' : 'info'" />
+        </dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>
+          <p-tag
+            [value]="user()!.isActive ? 'Active' : 'Inactive'"
+            [severity]="user()!.isActive ? 'success' : 'secondary'"
+          />
+        </dd>
+      </div>
+    </dl>
+  }
+</section>
