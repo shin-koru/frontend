@@ -1,0 +1,26 @@
+<main class="profile-page">
+  <section class="profile-card" aria-labelledby="profile-title">
+    <div class="progress"><span></span></div>
+    <p class="eyebrow">ПОСЛЕДНИЙ ШАГ</p>
+    <h1 id="profile-title">Создайте свой профиль</h1>
+    <p class="intro">Расскажите немного о себе. Эти данные помогут другим пользователям узнать вас.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="username">Имя пользователя</label>
+        <div class="username-input"><span aria-hidden="true">@</span><input pInputText id="username" formControlName="username" autocomplete="username" placeholder="например, aigerim" /></div>
+        @if (hasError('username', 'required')) { <small class="error">Придумайте имя пользователя.</small> }
+        @else if (hasError('username', 'minlength') || hasError('username', 'maxlength') || hasError('username', 'pattern')) { <small class="error">3–30 символов: латинские буквы, цифры, точка, дефис или подчёркивание.</small> }
+        @else { <small class="hint">Так вас будут видеть другие пользователи.</small> }
+      </div>
+
+      <div class="name-row">
+        <div class="field"><label for="firstName">Имя</label><input pInputText id="firstName" formControlName="firstName" autocomplete="given-name" placeholder="Ваше имя" />@if (hasError('firstName', 'required')) { <small class="error">Укажите имя.</small> }</div>
+        <div class="field"><label for="lastName">Фамилия</label><input pInputText id="lastName" formControlName="lastName" autocomplete="family-name" placeholder="Ваша фамилия" />@if (hasError('lastName', 'required')) { <small class="error">Укажите фамилию.</small> }</div>
+      </div>
+
+      <div class="field"><label for="country">Страна</label><p-select inputId="country" formControlName="country" [options]="countries" optionLabel="label" optionValue="value" placeholder="Выберите страну" styleClass="full" /></div>
+      <p-button type="submit" label="Создать профиль" [loading]="(loading$ | async) ?? false" styleClass="submit-button" />
+    </form>
+  </section>
+</main>
