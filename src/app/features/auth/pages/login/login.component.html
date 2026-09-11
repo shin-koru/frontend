@@ -1,46 +1,29 @@
-<div class="login-container">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-3">
-    <div class="field">
-      <p-selectbutton
-        [options]="typeOptions"
-        formControlName="type"
-        optionLabel="label"
-        optionValue="value"
-      >
-      </p-selectbutton>
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <div class="brand-mark" aria-hidden="true">S</div>
+    <div class="heading">
+      <p class="eyebrow">SHIN</p>
+      <h1 id="login-title">{{ step() === 'identifier' ? 'Добро пожаловать' : 'Проверьте код' }}</h1>
+      <p>@if (step() === 'identifier') { Введите данные — мы отправим вам одноразовый код для входа. } @else { Код отправлен на <strong>{{ loginForm.controls.identifier.value }}</strong>. }</p>
     </div>
-
-    <!-- Поле ввода Identifier -->
-    <div class="field flex flex-column gap-1">
-      <label for="identifier">
-        {{ loginForm.value.type === 'email' ? 'Электронная почта' : 'Номер телефона' }}
-      </label>
-
-      <input
-        pInputText
-        id="identifier"
-        formControlName="identifier"
-        [placeholder]="loginForm.value.type === 'email' ? 'example@mail.com' : '+77001234567'"
-      />
-
-      <!-- Ошибки валидации -->
-      @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) {
-        <small class="p-error">
-          @if (loginForm.controls.identifier.errors?.['required']) {
-            Поле обязательно для заполнения.
-          }
-          @if (loginForm.controls.identifier.errors?.['email']) {
-            Введите корректный Email.
-          }
-          @if (loginForm.controls.identifier.errors?.['pattern']) {
-            Введите корректный номер телефона (например, +77001234567).
-          }
-        </small>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      @if (step() === 'identifier') {
+        <div class="field"><label>Способ входа</label><p-selectbutton [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" /></div>
+        <div class="field">
+          <label for="identifier">{{ loginForm.value.type === 'email' ? 'Электронная почта' : 'Номер телефона' }}</label>
+          <input pInputText id="identifier" formControlName="identifier" [autocomplete]="loginForm.value.type === 'email' ? 'email' : 'tel'" [placeholder]="loginForm.value.type === 'email' ? 'name@example.com' : '+7 700 123 45 67'" />
+          @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) { <small class="error">{{ loginForm.controls.identifier.hasError('required') ? 'Это поле обязательно.' : 'Введите корректные данные.' }}</small> }
+        </div>
+        <p-button type="submit" label="Получить код" [loading]="(loading$ | async) ?? false" styleClass="full-button" />
+      } @else {
+        <div class="field">
+          <label for="code">Код подтверждения</label>
+          <input pInputText id="code" formControlName="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Введите код" />
+          @if (loginForm.controls.code.touched && loginForm.controls.code.invalid) { <small class="error">Введите код из 4–8 цифр.</small> }
+        </div>
+        <p-button type="submit" label="Продолжить" [loading]="(loading$ | async) ?? false" styleClass="full-button" />
+        <button type="button" class="text-button" (click)="editIdentifier()">Изменить email или номер</button>
       }
-    </div>
-
-    <!-- Кнопка отправки -->
-    <p-button type="submit" label="Получить код" [loading]="(loading$ | async) ?? false">
-    </p-button>
-  </form>
-</div>
+    </form>
+  </section>
+</main>
