@@ -1,6 +1,29 @@
+:root {
+  --color-primary: #5289AD;
+  --color-primary-dark: #3d6a8a;
+  --color-primary-light: #e8f1f7;
+  --color-dark: #243C4C;
+  --color-muted: #698696;
+  --color-border: #ACBCBF;
+  --color-border-light: #d4e0e2;
+  --color-bg: #F4FCFB;
+  --color-surface: #ffffff;
+
+  /* PrimeNG token overrides */
+  --p-primary-color: #5289AD;
+  --p-primary-contrast-color: #ffffff;
+  --p-primary-hover-color: #3d6a8a;
+  --p-text-color: #243C4C;
+  --p-text-muted-color: #698696;
+  --p-content-border-color: #ACBCBF;
+  --p-content-background: #ffffff;
+}
+
 html,
 body {
   margin: 0;
   min-height: 100%;
   font-family: var(--p-font-family, system-ui, sans-serif);
+  color: var(--color-dark);
+  background-color: var(--color-bg);
 }

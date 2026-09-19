@@ -1,29 +1,57 @@
 <main class="login-page">
   <section class="login-card" aria-labelledby="login-title">
-    <div class="brand-mark" aria-hidden="true">S</div>
-    <div class="heading">
-      <p class="eyebrow">SHIN</p>
-      <h1 id="login-title">{{ step() === 'identifier' ? 'Добро пожаловать' : 'Проверьте код' }}</h1>
-      <p>@if (step() === 'identifier') { Введите данные — мы отправим вам одноразовый код для входа. } @else { Код отправлен на <strong>{{ loginForm.controls.identifier.value }}</strong>. }</p>
-    </div>
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-      @if (step() === 'identifier') {
-        <div class="field"><label>Способ входа</label><p-selectbutton [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" /></div>
-        <div class="field">
-          <label for="identifier">{{ loginForm.value.type === 'email' ? 'Электронная почта' : 'Номер телефона' }}</label>
-          <input pInputText id="identifier" formControlName="identifier" [autocomplete]="loginForm.value.type === 'email' ? 'email' : 'tel'" [placeholder]="loginForm.value.type === 'email' ? 'name@example.com' : '+7 700 123 45 67'" />
-          @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) { <small class="error">{{ loginForm.controls.identifier.hasError('required') ? 'Это поле обязательно.' : 'Введите корректные данные.' }}</small> }
-        </div>
-        <p-button type="submit" label="Получить код" [loading]="(loading$ | async) ?? false" styleClass="full-button" />
-      } @else {
-        <div class="field">
-          <label for="code">Код подтверждения</label>
-          <input pInputText id="code" formControlName="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Введите код" />
-          @if (loginForm.controls.code.touched && loginForm.controls.code.invalid) { <small class="error">Введите код из 4–8 цифр.</small> }
-        </div>
-        <p-button type="submit" label="Продолжить" [loading]="(loading$ | async) ?? false" styleClass="full-button" />
-        <button type="button" class="text-button" (click)="editIdentifier()">Изменить email или номер</button>
+
+    <div class="card-header">
+      @if (step() === 'code') {
+        <button type="button" class="back-btn" (click)="editIdentifier()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M8.5 2.5L4 7l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Изменить email или номер
+        </button>
       }
-    </form>
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div class="heading">
+        <p class="eyebrow">SHIN</p>
+        <h1 id="login-title">{{ step() === 'identifier' ? 'Добро пожаловать' : 'Проверьте код' }}</h1>
+        <p>@if (step() === 'identifier') { Введите данные — мы отправим вам одноразовый код для входа. } @else { Код отправлен на <strong>{{ loginForm.controls.identifier.value }}</strong>. }</p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        @if (step() === 'identifier') {
+          <div class="field">
+            <label>Способ входа</label>
+            <p-selectbutton [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" />
+          </div>
+          <div class="field">
+            <label for="identifier">{{ loginForm.value.type === 'email' ? 'Электронная почта' : 'Номер телефона' }}</label>
+            <div class="input-wrap">
+              <input pInputText id="identifier" formControlName="identifier"
+                [autocomplete]="loginForm.value.type === 'email' ? 'email' : 'tel'"
+                [placeholder]="loginForm.value.type === 'email' ? 'name@example.com' : '+7 700 123 45 67'" />
+            </div>
+            @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) {
+              <small class="error">{{ loginForm.controls.identifier.hasError('required') ? 'Это поле обязательно.' : 'Введите корректные данные.' }}</small>
+            }
+          </div>
+          <p-button type="submit" label="Получить код" [loading]="(loading$ | async) ?? false" styleClass="submit-btn" />
+        } @else {
+          <div class="field">
+            <label for="code">Код подтверждения</label>
+            <div class="input-wrap">
+              <input pInputText id="code" formControlName="code" inputmode="numeric"
+                autocomplete="one-time-code" maxlength="8" placeholder="Введите код" />
+            </div>
+            @if (loginForm.controls.code.touched && loginForm.controls.code.invalid) {
+              <small class="error">Введите код из 4–8 цифр.</small>
+            }
+          </div>
+          <p-button type="submit" label="Продолжить" [loading]="(loading$ | async) ?? false" styleClass="submit-btn" />
+        }
+      </form>
+    </div>
+
   </section>
 </main>
