@@ -1,29 +1,33 @@
 .page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
 }
 
 .page-header {
-  display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  display: flex;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
 }
 
 .page-header h1 {
-  margin: 0 0 0.25rem;
+  color: var(--color-dark, #243C4C);
   font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem;
 }
 
 .page-subtitle {
+  color: var(--color-muted, #698696);
+  font-size: 0.875rem;
   margin: 0;
-  color: var(--p-text-muted-color, #6b7280);
 }
 
 .toolbar {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .search {

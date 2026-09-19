@@ -1,25 +1,29 @@
 .page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
 }
 
 .page-header {
-  display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  display: flex;
   gap: 1rem;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
 }
 
 .page-header h1 {
-  margin: 0 0 0.25rem;
+  color: var(--color-dark, #243C4C);
   font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem;
 }
 
 .page-subtitle {
+  color: var(--color-muted, #698696);
+  font-size: 0.875rem;
   margin: 0;
-  color: var(--p-text-muted-color, #6b7280);
 }
 
 .actions {
@@ -29,24 +33,39 @@
 }
 
 .details {
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #ACBCBF);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(36, 60, 76, 0.08);
   display: grid;
-  gap: 1rem;
+  gap: 0;
   margin: 0;
+  overflow: hidden;
+  padding: 0 1.5rem;
 }
 
 .details > div {
+  border-bottom: 1px solid var(--color-border-light, #d4e0e2);
   display: grid;
-  gap: 0.25rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--p-content-border-color, #e5e7eb);
+  gap: 0.3rem;
+  padding: 1.1rem 0;
+}
+
+.details > div:last-child {
+  border-bottom: none;
 }
 
 dt {
-  font-size: 0.85rem;
-  color: var(--p-text-muted-color, #6b7280);
+  color: var(--color-muted, #698696);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 dd {
-  margin: 0;
+  color: var(--color-dark, #243C4C);
   font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
 }
