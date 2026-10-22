@@ -4,6 +4,32 @@ import { adminGuard } from '../../core/services/admin.service';
 
 export const subscriptionRoutes: Routes = [
   {
+    path: 'payments',
+    canActivate: [authGuard],
+    title: 'Payment history - SHIN',
+    loadComponent: () =>
+      import('./pages/payment-history/payment-history.component').then(
+        (m) => m.PaymentHistoryComponent,
+      ),
+  },
+  {
+    path: 'admin/payments',
+    canActivate: [authGuard, adminGuard],
+    data: { admin: true },
+    title: 'Payments administration - SHIN',
+    loadComponent: () =>
+      import('./pages/payment-history/payment-history.component').then(
+        (m) => m.PaymentHistoryComponent,
+      ),
+  },
+  {
+    path: 'plans/payment/:id',
+    canActivate: [authGuard],
+    title: 'Test checkout - SHIN',
+    loadComponent: () =>
+      import('./pages/payment/payment.component').then((m) => m.PaymentComponent),
+  },
+  {
     path: 'admin/subscriptions',
     canActivate: [authGuard, adminGuard],
     title: 'Subscription administration - SHIN',

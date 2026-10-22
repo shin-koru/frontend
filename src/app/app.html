@@ -8,18 +8,46 @@
   (closed)="playback.close()"
 >
   <div class="stack">
+    @if (playback.error()) {
+      <p role="alert">{{ playback.error() }}</p>
+      <button type="button" (click)="playback.retry()">Retry playback</button>
+    }
     @if (playback.url()) {
       <video
+        #player
+        #adaptive="adaptiveVideo"
+        (timeupdate)="playback.checkExpiry(player)"
+        (seeking)="playback.checkExpiry(player)"
+        (play)="playback.checkExpiry(player)"
+        (loadedmetadata)="playback.loaded(player)"
+        (error)="playback.failed(player)"
         class="movie-player"
-        [src]="playback.url()"
+        [shinAdaptiveVideo]="playback.url()"
+        [format]="playback.format()"
+        (deliveryError)="playback.deliveryFailed($event, player)"
         controls
         playsinline
         preload="metadata"
         aria-label="Movie player"
       ></video>
+      @if (adaptive.qualities().length > 1) {
+        <label
+          >Video quality
+          <select
+            aria-label="Video quality"
+            [value]="adaptive.selectedQuality()"
+            (change)="adaptive.selectQuality($any($event.target).value)"
+          >
+            <option value="-1">Auto</option>
+            @for (quality of adaptive.qualities(); track quality.index) {
+              <option [value]="quality.index">{{ quality.height }}p</option>
+            }
+          </select>
+        </label>
+      }
     } @else if (playback.loading()) {
       <p role="status">Loading video…</p>
-    } @else {
+    } @else if (!playback.error()) {
       <h2>Streaming is coming soon.</h2>
       <p class="muted">
         This is a preview of the SHIN collection. This title is not yet available to play. Save it

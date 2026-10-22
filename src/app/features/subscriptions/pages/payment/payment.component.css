@@ -1,0 +1,48 @@
+.payment-page {
+  max-width: 820px;
+  margin: auto;
+  padding: 2rem 1.5rem;
+}
+h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+section {
+  padding: 1.5rem;
+  border: 1px solid #44384f;
+  border-radius: 16px;
+  margin-top: 1.5rem;
+}
+.test-notice {
+  padding: 1rem;
+  background: #30243d;
+  border-radius: 10px;
+}
+.price {
+  font-size: 1.7rem;
+}
+.price span {
+  font-size: 1rem;
+  color: #c3b6cd;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+p {
+  line-height: 1.7;
+}
+a {
+  color: #d6b9ff;
+}
+a.shin-button {
+  color: white;
+}
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: column;
+  }
+  .actions button {
+    width: 100%;
+  }
+}

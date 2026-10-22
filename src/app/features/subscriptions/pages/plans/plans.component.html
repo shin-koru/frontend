@@ -1,4 +1,5 @@
 <main id="main-content" class="page plans-page">
+  <p><a routerLink="/payments">Payment history</a></p>
   <div class="plans-heading">
     <p class="eyebrow accent">YOUR SHIN MEMBERSHIP</p>
     <h1>More stories. Your way.</h1>
@@ -24,7 +25,11 @@
           </p>
         </div>
         <span class="source-badge">{{
-          current.activationMethod === 'PROMO_CODE' ? 'Promo code' : 'Subscription'
+          current.activationMethod === 'PROMO_CODE'
+            ? 'Promo code'
+            : current.activationMethod === 'PAYMENT'
+              ? 'Test payment'
+              : 'Subscription'
         }}</span>
       </div>
       @if (confirmCancel()) {
@@ -112,13 +117,36 @@
   <section aria-labelledby="plans-title">
     <h2 id="plans-title">Available plans</h2>
     <p class="muted">
-      Payment activation is not available yet. You can activate a plan with a valid promo code.
+      Study checkout only: no real charges and no automatic renewal. Paid checkout is available for
+      KZT plans. Promo codes remain available.
     </p>
     @if (subscriptions.plansError()) {
       <p role="alert">Plans could not load.</p>
       <button shinButton variant="secondary" (click)="subscriptions.loadPlans()">
         Retry plans
       </button>
+    }
+    @if (payments.error()) {
+      <p role="alert">{{ payments.error() }}</p>
+    }
+    @if (payments.optionsError()) {
+      <p role="alert">Payment settings could not load.</p>
+      <button shinButton variant="secondary" (click)="payments.loadOptions()">
+        Retry payment settings
+      </button>
+    }
+    @if (payments.options(); as options) {
+      @if (!options.enabled) {
+        <p>Test checkout is disabled. Promo activation is still available.</p>
+      } @else {
+        <p>
+          {{
+            options.mode === 'demo'
+              ? 'Local simulator: no account or card required.'
+              : 'Freedom Pay test mode: use test cards only.'
+          }}
+        </p>
+      }
     }
     <div class="plans-grid">
       @for (plan of subscriptions.plans(); track plan.id) {
@@ -133,7 +161,24 @@
             <li>{{ plan.maxQuality.replace('_', ' ') }} maximum quality</li>
             <li>{{ plan.duration }} days of access</li>
           </ul>
-          <p class="muted">Activate with a code for this plan.</p>
+          @if (plan.currency === 'KZT' && plan.price > 0) {
+            <button
+              shinButton
+              [disabled]="
+                !payments.options()?.enabled ||
+                payments.busy() ||
+                subscriptions.busy() ||
+                subscriptions.loadingCurrent() ||
+                subscriptions.currentError() ||
+                !!subscriptions.current().subscription
+              "
+              (click)="payments.create(plan.id)"
+            >
+              {{ payments.busy() ? 'Preparing checkout...' : 'Try test payment' }}
+            </button>
+          } @else {
+            <p class="muted">Activate with a code for this plan.</p>
+          }
         </article>
       }
     </div>

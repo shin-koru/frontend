@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +7,7 @@ import { formatPlanPrice } from '../../model/subscription.model';
 import { PlanDraft, PromoSummary } from '../../model/subscription-admin.model';
 import { SubscriptionAdminStore } from '../../state/subscription-admin.store';
 @Component({
-  imports: [FormsModule, DatePipe, ButtonDirective],
+  imports: [RouterLink, FormsModule, DatePipe, ButtonDirective],
   providers: [SubscriptionAdminStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './subscription-admin.component.html',
@@ -20,8 +21,8 @@ export class SubscriptionAdminComponent {
   readonly copyError = signal(false);
   draft: PlanDraft = {
     name: '',
-    price: 999,
-    currency: 'USD',
+    price: 100000,
+    currency: 'KZT',
     duration: 30,
     maxDevices: 1,
     maxQuality: 'HD',
