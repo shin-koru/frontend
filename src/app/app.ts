@@ -10,9 +10,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UploadManager } from './core/uploads/upload-manager.service';
 import { ProfileStore } from './features/profile/state/profile.store';
 import { ContentStore } from './features/movies/state/content.store';
+import { AdaptiveVideoDirective } from './features/movies/service/adaptive-video.directive';
 
 @Component({
-  imports: [RouterOutlet, ModalComponent, NotificationsComponent, HeaderComponent, FooterComponent],
+  imports: [
+    RouterOutlet,
+    ModalComponent,
+    NotificationsComponent,
+    HeaderComponent,
+    FooterComponent,
+    AdaptiveVideoDirective,
+  ],
   selector: 'app-root',
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

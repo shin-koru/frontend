@@ -1,0 +1,125 @@
+<main class="payment-page" id="main-content">
+  <p class="eyebrow">STUDY PROJECT</p>
+  <h1>Test checkout</h1>
+  <p class="test-notice">No real money. No automatic renewal. Never enter real card details.</p>
+  @if (payments.error()) {
+    <p role="alert">{{ payments.error() }}</p>
+  }
+  @if (payments.loading()) {
+    <p role="status">Checking payment status...</p>
+  }
+  @if (payments.order(); as order) {
+    <section class="surface" aria-live="polite">
+      <h2>{{ order.planName }}</h2>
+      <p class="price">{{ amount(order.amount) }} <span>test amount</span></p>
+      @switch (order.status) {
+        @case ('CONFIRMED') {
+          <h3>Test payment received</h3>
+          <p>Your subscription activation is pending. Check the status again shortly.</p>
+        }
+        @case ('PAID') {
+          <h3>Test payment confirmed</h3>
+          <p>
+            Your subscription was activated. This was a simulation or test transaction, with no real
+            charge.
+          </p>
+          <a shinButton routerLink="/plans">View my subscription</a>
+        }
+        @case ('FAILED') {
+          <h3>Test payment did not complete</h3>
+          <p>No subscription was activated and no real money was charged.</p>
+          <a shinButton routerLink="/plans">Choose a plan again</a>
+        }
+        @case ('EXPIRED') {
+          <h3>Checkout expired</h3>
+          <p>Start a new test checkout from the plans page.</p>
+          <a shinButton routerLink="/plans">Back to plans</a>
+        }
+        @case ('REVIEW') {
+          <h3>Test payment needs review</h3>
+          <p>
+            The payment was confirmed, but subscription activation needs review. It has not been
+            replaced or extended. No real money was charged.
+          </p>
+          <a shinButton routerLink="/plans">View my subscription</a>
+        }
+        @case ('CREATING') {
+          <h3>Waiting for checkout confirmation</h3>
+          <p>
+            The provider response is not confirmed yet. Do not start another payment. Check the
+            status again, or wait until this checkout expires.
+          </p>
+        }
+        @case ('PENDING') {
+          @if (order.mode === 'demo') {
+            <h3>Local payment simulator</h3>
+            <p>
+              This stays inside the study app. No payment provider is contacted and no card details
+              are needed.
+            </p>
+            <div class="actions">
+              <button
+                shinButton
+                [disabled]="
+                  payments.busy() ||
+                  payments.loading() ||
+                  payments.options()?.mode !== 'demo' ||
+                  !payments.options()?.enabled
+                "
+                (click)="payments.completeDemo(true)"
+              >
+                Simulate successful payment</button
+              ><button
+                shinButton
+                variant="secondary"
+                [disabled]="
+                  payments.busy() ||
+                  payments.loading() ||
+                  payments.options()?.mode !== 'demo' ||
+                  !payments.options()?.enabled
+                "
+                (click)="payments.completeDemo(false)"
+              >
+                Simulate failed payment
+              </button>
+            </div>
+          } @else {
+            <h3>Freedom Pay test checkout</h3>
+            <p>
+              Use only Freedom Pay's published test cards and an approved test merchant account.
+              Access activates after a verified test payment confirmation, not just returning to
+              this page.
+            </p>
+            @if (checkoutUrl(order.checkoutUrl); as url) {
+              <a shinButton [href]="url" rel="noreferrer">Continue to Freedom Pay test checkout</a>
+            }
+            <p>Already finished checkout? Check the status below.</p>
+          }
+        }
+      }
+      @if (
+        order.status === 'PENDING' || order.status === 'CREATING' || order.status === 'CONFIRMED'
+      ) {
+        <p>Checkout expires {{ order.expiresAt | date: 'medium' }}</p>
+        <button
+          shinButton
+          variant="secondary"
+          [disabled]="payments.loading() || payments.busy()"
+          (click)="payments.refresh()"
+        >
+          Check payment status
+        </button>
+      }
+    </section>
+  } @else if (!payments.loading()) {
+    <button shinButton variant="secondary" (click)="payments.refresh()">Retry status</button>
+  }
+  @if (payments.optionsError()) {
+    <p role="alert">Test payment settings could not load.</p>
+    <button shinButton variant="secondary" (click)="payments.loadOptions()">
+      Retry payment settings
+    </button>
+  }
+  <p><a routerLink="/payments">Payment history</a></p>
+  <p><a routerLink="/plans">Back to plans</a></p>
+</main>

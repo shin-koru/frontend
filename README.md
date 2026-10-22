@@ -134,7 +134,7 @@ Browser validation uses HTTP fixtures; it does not verify a live deployed databa
 
 The authenticated `/plans` page is available from desktop and mobile navigation.
 It lists active plans, shows the current subscription and expiry, accepts promo
-codes, and confirms immediate cancellation. Payment activation is not available.
+codes, and confirms immediate cancellation. Test-only one-time KZT payment activation is available; real charges are disabled.
 
 The subscriptions feature separates typed HTTP access (`subscription.api.ts`),
 request/state coordination (`subscription.store.ts`), and the OnPush page.
@@ -171,3 +171,17 @@ The movies and subscriptions features follow the profile feature layout:
 
 API tests stay beside their services, and component tests stay beside components.
 Import shared types directly from model files rather than through HTTP services.
+
+## Study checkout
+
+`/plans` offers **Try test payment** for active, positive-price KZT plans.
+`/plans/payment/:id` shows the server-recorded result. The default offline simulator
+needs no account or card and can simulate success/failure. Freedom Pay test mode
+shows a hosted checkout link only; real card details must never be entered.
+Payment APIs, models, state, and pages follow the same feature folders as profile.
+The frontend sends only plan and retry IDs, never amounts or owners, and ignores
+provider return query parameters as evidence of success. No live billing or renewal
+is offered. For setup and migration details see the backend subscription-service
+`docs/payments.md`. Browser verification uses fixtures, not a real provider account.
+
+Payment history: `/payments` for users, `/admin/payments` for administrators. Both use the subscriptions feature model/service/state/pages structure. All payments remain test-only. The gateway now requires the separate payment-service; see the sibling backend payment-service README for setup and existing-data transfer.
