@@ -1,18 +1,13 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { App } from './app';
+import { legacyUiGuard } from './core/guards/legacy-ui.guard';
 
 export const routes: Routes = [
-  { 
-    path: '', 
-    pathMatch: 'full', 
-    component: App, 
-    canActivate: [authGuard] 
-  },
+  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
   {
     path: 'users',
     loadChildren: () => import('./features/users/users.routes').then((m) => m.usersRoutes),
-    canActivate: [authGuard], // Guard protected routes like users instead
+    canActivate: [authGuard, legacyUiGuard],
   },
   {
     path: 'auth',
@@ -23,4 +18,14 @@ export const routes: Routes = [
     loadChildren: () => import('./features/profile/profile.routes').then((m) => m.profileRoutes),
     canActivate: [authGuard],
   },
+  {
+    path: '',
+    loadChildren: () =>
+      import('./features/subscriptions/subscriptions.routes').then((m) => m.subscriptionRoutes),
+  },
+  {
+    path: '',
+    loadChildren: () => import('./features/movies/movies.routes').then((m) => m.movieRoutes),
+  },
+  { path: '**', redirectTo: '' },
 ];

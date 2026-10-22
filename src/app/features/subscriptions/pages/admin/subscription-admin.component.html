@@ -1,0 +1,284 @@
+<main class="admin-subscriptions page-shell" id="main-content">
+  <header>
+    <p class="eyebrow">ADMIN STUDIO</p>
+    <h1>Plans &amp; promo codes</h1>
+    <p>Manage membership offers and invite viewers with a promo code.</p>
+  </header>
+  @if (store.error()) {
+    <p role="alert">{{ store.error() }}</p>
+  }
+  @if (store.message()) {
+    <p role="status">{{ store.message() }}</p>
+  }
+  @if (store.created(); as created) {
+    <section class="secret-panel" aria-label="New promo code">
+      <h2>Save your promo code</h2>
+      <p>This code is shown only once. It will not be available after you leave this page.</p>
+      <code>{{ created.code }}</code>
+      <p>
+        Expires {{ created.expiresAt | date: 'medium' }} &middot; {{ created.maxRedemptions }} total
+        uses
+      </p>
+      <button shinButton (click)="copy()">{{ copied() ? 'Copied' : 'Copy code' }}</button>
+      <button shinButton variant="secondary" (click)="dismissCode()">I have saved the code</button>
+      @if (copyError()) {
+        <p role="alert">Copy failed. Select and copy the code manually.</p>
+      }
+    </section>
+  }
+  <div class="forms-grid">
+    <section>
+      <h2>Create a plan</h2>
+      <p>
+        Terms are fixed after creation. To change pricing or benefits, create a replacement plan.
+      </p>
+      <form #planForm="ngForm" (ngSubmit)="createPlan()">
+        <label
+          >Plan name<input
+            name="name"
+            [(ngModel)]="draft.name"
+            required
+            maxlength="100"
+            pattern=".*\S.*"
+        /></label>
+        <div class="fields">
+          <label
+            >Price in minor units<input
+              name="price"
+              type="number"
+              [(ngModel)]="draft.price"
+              required
+              min="0"
+              max="2147483647"
+              step="1"
+              pattern="[0-9]+" /></label
+          ><label
+            >Currency<input
+              name="currency"
+              [(ngModel)]="draft.currency"
+              required
+              pattern="[A-Z]{3}"
+              maxlength="3"
+          /></label>
+        </div>
+        <p class="hint">For USD, 999 means $9.99. For JPY, 999 means JPY 999.</p>
+        <div class="fields">
+          <label
+            >Duration in days<input
+              name="duration"
+              type="number"
+              [(ngModel)]="draft.duration"
+              required
+              min="1"
+              max="3650"
+              step="1"
+              pattern="[0-9]+" /></label
+          ><label
+            >Maximum devices<input
+              name="devices"
+              type="number"
+              [(ngModel)]="draft.maxDevices"
+              required
+              min="1"
+              max="100"
+              step="1"
+              pattern="[0-9]+"
+          /></label>
+        </div>
+        <label
+          >Maximum quality<select name="quality" [(ngModel)]="draft.maxQuality">
+            <option>SD</option>
+            <option>HD</option>
+            <option>FULL_HD</option>
+            <option>UHD</option>
+          </select></label
+        >
+        <label class="checkbox"
+          ><input type="checkbox" name="active" [(ngModel)]="draft.isActive" /> Available
+          immediately</label
+        >
+        <button
+          shinButton
+          type="submit"
+          [disabled]="planForm.invalid || store.busy() || store.plansLoading()"
+        >
+          Create plan
+        </button>
+      </form>
+    </section>
+    <section>
+      <h2>Create a promo code</h2>
+      <p>Each viewer can redeem a code once. Total uses are shared across all viewers.</p>
+      <form #promoForm="ngForm" (ngSubmit)="createPromo()">
+        <label for="promo-plan">Plan</label
+        ><select id="promo-plan" name="plan" [(ngModel)]="promo.planId" required>
+          <option value="" disabled>Select an active plan</option>
+          @for (plan of store.plans(); track plan.id) {
+            @if (plan.isActive) {
+              <option [value]="plan.id">{{ plan.name }}</option>
+            }
+          }
+        </select>
+        <label
+          >Total usage limit<input
+            name="limit"
+            type="number"
+            [(ngModel)]="promo.maxRedemptions"
+            required
+            min="1"
+            max="1000000"
+            step="1"
+            pattern="[0-9]+"
+        /></label>
+        <label
+          >Expiration date and time<input
+            name="expiry"
+            type="datetime-local"
+            [(ngModel)]="promo.expiresAt"
+            required
+        /></label>
+        <p class="hint">Uses your local time zone. Only future dates are accepted.</p>
+        <button
+          shinButton
+          type="submit"
+          [disabled]="
+            promoForm.invalid ||
+            !activePromoPlan() ||
+            store.busy() ||
+            !!store.created() ||
+            store.promosLoading()
+          "
+        >
+          Create promo code
+        </button>
+      </form>
+    </section>
+  </div>
+  <section>
+    <div class="section-heading">
+      <h2>Subscription plans</h2>
+      <button
+        shinButton
+        variant="secondary"
+        (click)="store.refreshPlans()"
+        [disabled]="store.plansLoading() || store.busy()"
+      >
+        Refresh plans
+      </button>
+    </div>
+    @if (store.plansError()) {
+      <p role="alert">
+        Plans could not be loaded. <button (click)="store.loadPlans()">Retry plans</button>
+      </p>
+    }
+    @for (plan of store.plans(); track plan.id) {
+      <article>
+        <div>
+          <h3>{{ plan.name }}</h3>
+          <p>
+            {{ price(plan) }} &middot; {{ plan.duration }} days &middot;
+            {{ plan.maxDevices }} devices &middot;
+            {{ plan.maxQuality }}
+          </p>
+          <span>{{ plan.isActive ? 'Active' : 'Inactive' }}</span>
+        </div>
+        <button
+          shinButton
+          variant="secondary"
+          [disabled]="store.busy()"
+          (click)="store.setActive(plan)"
+        >
+          {{ plan.isActive ? 'Deactivate' : 'Activate' }}
+        </button>
+      </article>
+    }
+    @if (store.plansLoading()) {
+      <p role="status">Loading plans...</p>
+    } @else if (!store.plans().length && !store.plansError()) {
+      <p>No plans yet. Create your first plan above.</p>
+    }
+    @if (store.plans().length < store.plansTotal()) {
+      <button
+        shinButton
+        variant="secondary"
+        [disabled]="store.plansLoading()"
+        (click)="store.loadPlans()"
+      >
+        Load more plans
+      </button>
+    }
+  </section>
+  <section>
+    <div class="section-heading">
+      <h2>Issued promo codes</h2>
+      <button
+        shinButton
+        variant="secondary"
+        (click)="store.refreshPromos()"
+        [disabled]="store.promosLoading() || store.busy()"
+      >
+        Refresh promos
+      </button>
+    </div>
+    <p>Codes are identified by their ID. The secret itself cannot be retrieved.</p>
+    @if (store.promosError()) {
+      <p role="alert">
+        Promo codes could not be loaded. <button (click)="store.loadPromos()">Retry promos</button>
+      </p>
+    }
+    @for (promo of store.promos(); track promo.id) {
+      <article>
+        <div>
+          <h3>{{ planName(promo.planId) }}</h3>
+          <p class="identifier">ID: {{ promo.id }}</p>
+          <p>
+            {{ promo.redemptionCount }} / {{ promo.maxRedemptions }} uses &middot;
+            {{ status(promo) }}
+          </p>
+          <p>Expires {{ promo.expiresAt | date: 'medium' }}</p>
+        </div>
+        @if (promo.isActive) {
+          <div>
+            @if (revokePending() === promo.id) {
+              <p>Prevent any future use of this code?</p>
+              <button
+                shinButton
+                [disabled]="store.busy()"
+                (click)="store.revoke(promo.id); revokePending.set(null)"
+              >
+                Confirm revoke
+              </button>
+              <button shinButton variant="secondary" (click)="revokePending.set(null)">
+                Keep code
+              </button>
+            } @else {
+              <button
+                shinButton
+                variant="secondary"
+                [disabled]="store.busy()"
+                (click)="revokePending.set(promo.id)"
+              >
+                Revoke
+              </button>
+            }
+          </div>
+        }
+      </article>
+    }
+    @if (store.promosLoading()) {
+      <p role="status">Loading promo codes...</p>
+    } @else if (!store.promos().length && !store.promosError()) {
+      <p>No promo codes yet.</p>
+    }
+    @if (store.promos().length < store.promosTotal()) {
+      <button
+        shinButton
+        variant="secondary"
+        [disabled]="store.promosLoading()"
+        (click)="store.loadPromos()"
+      >
+        Load more promos
+      </button>
+    }
+  </section>
+</main>

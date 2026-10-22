@@ -1,0 +1,49 @@
+<main id="main-content" class="page home-page">
+  @if (!catalog.session.token()) {
+    <section class="feature">
+      <div class="feature-copy">
+        <p class="eyebrow accent">WELCOME TO SHIN</p>
+        <h1 class="feature-title">Great stories.<br />Closer than ever.</h1>
+        <p class="muted body-copy">
+          Sign in to discover the SHIN collection and save your next great watch.
+        </p>
+        <a shinButton routerLink="/auth/login">Sign in to explore</a>
+      </div>
+      <div class="landscape feature-art" role="img" aria-label="Sunset over desert dunes"></div>
+    </section>
+  } @else if (catalog.loading() && !catalog.loaded()) {
+    <h1>Your next great watch.</h1>
+    <p role="status" class="muted">Loading the SHIN collection…</p>
+  } @else if (catalog.error() && !catalog.loaded()) {
+    <section class="surface empty-state" role="alert">
+      <h1>The collection couldn’t load.</h1>
+      <p class="muted">Please check your connection and try again.</p>
+      <button shinButton (click)="catalog.load()">Try again</button>
+    </section>
+  } @else if (catalog.movies()[0]; as featured) {
+    <shin-feature [movie]="featured" />
+    <p class="eyebrow muted">YOUR NEXT GREAT WATCH</p>
+    <section class="movie-section">
+      <h2>Explore the collection</h2>
+      <div class="movie-grid home-grid">
+        @for (movie of catalog.movies().slice(0, 6); track movie.slug) {
+          <shin-movie-card [movie]="movie" />
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="surface empty-state">
+      <h1>Your next great watch.</h1>
+      <p class="muted">No published titles are available yet.</p>
+      @if (catalog.hasMore()) {
+        <button shinButton (click)="catalog.loadMore()" [disabled]="catalog.loading()">
+          Check more titles
+        </button>
+      }
+    </section>
+  }
+  <section class="surface promo">
+    <h2>A world of cinema.<br />One place to call home.</h2>
+    <a shinButton variant="secondary" routerLink="/movies">Explore movies</a>
+  </section>
+</main>

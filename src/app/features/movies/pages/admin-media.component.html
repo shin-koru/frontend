@@ -1,0 +1,229 @@
+<main id="main-content" class="page admin-media-page stack">
+  <p class="eyebrow accent">SHIN STUDIO</p>
+  <div class="studio-heading">
+    <div>
+      <h1>Movies &amp; series</h1>
+      <p class="muted">Create a draft, add your media, and publish when it is ready.</p>
+    </div>
+    <button shinButton (click)="startNew()" [disabled]="busy()">New title</button>
+  </div>
+  @if (error()) {
+    <p role="alert" class="field-error">
+      We could not load the catalog. <button shinButton (click)="load()">Try again</button>
+    </p>
+  }
+  <label class="stack"
+    >Movie or series<select
+      aria-label="Movie or series"
+      [value]="selected()?.id ?? ''"
+      (change)="select($event)"
+      [disabled]="busy()"
+    >
+      <option value="">Select a movie or series</option>
+      @for (movie of movies(); track movie.id) {
+        <option [value]="movie.id">{{ movie.title }} | {{ statusLabel(movie.status) }}</option>
+      }
+    </select></label
+  >
+  @if (loading()) {
+    <p role="status" class="muted">Loading movies...</p>
+  }
+  @if (more()) {
+    <button shinButton variant="secondary" [disabled]="loading()" (click)="load()">
+      Load more titles
+    </button>
+  }
+  @if (message()) {
+    <p role="status" class="studio-notice">{{ message() }}</p>
+  }
+  @if (saveError()) {
+    <p role="alert" class="field-error">{{ saveError() }}</p>
+  }
+  @if (creating() || selected()) {
+    <section class="surface stack admin-movie">
+      <div class="studio-heading">
+        <h2>{{ creating() ? 'New title' : 'Title details' }}</h2>
+        <span class="studio-status">{{
+          selected() ? statusLabel(selected()!.status) : 'New draft'
+        }}</span>
+      </div>
+      <form #movieForm="ngForm" class="stack" (ngSubmit)="save()">
+        <fieldset class="stack studio-fields" [disabled]="busy()">
+          <label class="stack"
+            >Title
+            <input
+              name="title"
+              [(ngModel)]="draft.title"
+              (ngModelChange)="dirty.set(true)"
+              required
+              maxlength="255"
+          /></label>
+          <label class="stack"
+            >Description
+            <textarea
+              name="description"
+              [(ngModel)]="draft.description"
+              (ngModelChange)="dirty.set(true)"
+              rows="5"
+              maxlength="20000"
+            ></textarea>
+          </label>
+          <div class="studio-form-grid">
+            <label class="stack"
+              >Type
+              <select
+                aria-label="Type"
+                name="type"
+                [(ngModel)]="draft.type"
+                (ngModelChange)="dirty.set(true)"
+              >
+                <option value="MOVIE">Movie</option>
+                <option value="SERIES">Series</option>
+              </select></label
+            >
+            <label class="stack"
+              >Release date
+              <input
+                type="date"
+                name="releaseDate"
+                [(ngModel)]="draft.releaseDate"
+                (ngModelChange)="dirty.set(true)"
+            /></label>
+            <label class="stack"
+              >Runtime (seconds)
+              <input
+                type="number"
+                name="durationSeconds"
+                [(ngModel)]="draft.durationSeconds"
+                (ngModelChange)="dirty.set(true)"
+                min="0"
+                max="2147483647"
+                step="1"
+            /></label>
+            <label class="stack"
+              >Age rating
+              <input
+                name="ageRating"
+                [(ngModel)]="draft.ageRating"
+                (ngModelChange)="dirty.set(true)"
+                maxlength="20"
+                placeholder="e.g. PG-13"
+            /></label>
+          </div>
+        </fieldset>
+        <div class="upload-actions">
+          <button
+            shinButton
+            type="submit"
+            [disabled]="busy() || movieForm.invalid || (!creating() && !dirty())"
+          >
+            {{ busy() ? 'Saving...' : creating() ? 'Create draft' : 'Save details' }}
+          </button>
+          <button
+            shinButton
+            type="button"
+            variant="secondary"
+            (click)="discard()"
+            [disabled]="busy()"
+          >
+            {{ creating() ? 'Cancel' : 'Discard changes' }}
+          </button>
+          @if (dirty()) {
+            <span class="muted">Unsaved changes</span>
+          }
+        </div>
+      </form>
+    </section>
+  }
+  @if (selected(); as movie) {
+    @if (movie.type === 'SERIES' || movie.type === 1) {
+      @for (series of [movie]; track series.id) {
+        <shin-series-manager [contentId]="series.id" />
+      }
+    }
+    <section class="surface stack admin-movie">
+      <h2>Poster &amp; video</h2>
+      <p class="muted">Uploads save automatically. Large videos can be paused and resumed.</p>
+      <div class="media-upload-grid">
+        <shin-upload-field
+          [taskKey]="'movie:' + movie.id + ':poster'"
+          purpose="poster"
+          [contentId]="movie.id"
+          label="Movie poster"
+          (saved)="saved(movie.id, 'posterObjectKey', $event)"
+        />
+        @if (movie.type !== 'SERIES' && movie.type !== 1) {
+          <shin-upload-field
+            [taskKey]="'movie:' + movie.id + ':video'"
+            purpose="video"
+            [contentId]="movie.id"
+            label="Movie video"
+            (saved)="saved(movie.id, 'videoObjectKey', $event)"
+          />
+        }
+      </div>
+      <p class="muted">
+        {{ movie.posterObjectKey ? 'Poster saved' : 'No poster uploaded' }} |
+        {{
+          movie.type === 'SERIES' || movie.type === 1
+            ? 'Videos are managed per episode'
+            : movie.videoObjectKey
+              ? 'Video saved'
+              : 'No video uploaded'
+        }}
+      </p>
+    </section>
+    <section class="surface stack admin-movie">
+      <h2>Publication</h2>
+      <p class="muted">
+        Published titles appear in the catalog. Archiving hides the title and keeps its details and
+        media for later.
+      </p>
+      @if (
+        !movie.posterObjectKey ||
+        (movie.type !== 'SERIES' && movie.type !== 1 && !movie.videoObjectKey)
+      ) {
+        <p class="muted">Upload a poster before publishing. Movies also need a video.</p>
+      }
+      @if (dirty()) {
+        <p class="muted">Save or discard your changes before changing publication status.</p>
+      }
+      <div class="upload-actions">
+        @if (statusLabel(movie.status) !== 'Published') {
+          <button shinButton [disabled]="!canPublish()" (click)="changeStatus('publish')">
+            {{ movie.type === 'SERIES' || movie.type === 1 ? 'Publish series' : 'Publish movie' }}
+          </button>
+        }
+        @if (statusLabel(movie.status) !== 'Archived') {
+          <button
+            shinButton
+            variant="secondary"
+            [disabled]="busy() || dirty()"
+            (click)="archivePending.set(true)"
+          >
+            {{ movie.type === 'SERIES' || movie.type === 1 ? 'Archive series' : 'Archive movie' }}
+          </button>
+        }
+      </div>
+      @if (archivePending()) {
+        <div class="studio-notice stack" role="group" aria-label="Confirm archive">
+          <p>Archive {{ movie.title }}? Viewers will no longer find it in the catalog.</p>
+          <div class="upload-actions">
+            <button shinButton [disabled]="busy()" (click)="changeStatus('archive')">
+              Confirm archive</button
+            ><button
+              shinButton
+              variant="secondary"
+              [disabled]="busy()"
+              (click)="archivePending.set(false)"
+            >
+              Keep movie
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  } @else if (!creating() && !loading() && !movies().length) {
+    <p class="surface empty-state">No titles yet. Choose New title to create your first draft.</p>
+  }
+</main>

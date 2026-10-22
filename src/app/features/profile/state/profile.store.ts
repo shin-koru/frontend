@@ -55,7 +55,7 @@ export class ProfileStore {
         this.patch({ loading: false, error: null, profile: res });
       }),
       catchError((error: HttpErrorResponse) => {
-        this.patch({ loading: false, error: error.message });
+        this.patch({ loading: false, error: error.message, profile: null });
         return throwError(() => error);
       }),
     );

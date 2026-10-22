@@ -1,7 +1,31 @@
-<router-outlet></router-outlet>
-<p-confirmdialog />
-<p-toast
-  key="toast"
-  showTransitionOptions="250ms ease-out cubic-bezier(0, 0, 0.2, 1)"
-  hideTransitionOptions="150ms ease-in cubic-bezier(0.4, 0, 1, 1)"
-/>
+<shin-header />
+<div class="route-content"><router-outlet /></div>
+<shin-footer />
+<p class="sr-only" role="status" aria-live="polite">{{ watchlist.notice() }}</p>
+<shin-modal
+  [heading]="playback.movie()?.title || ''"
+  [open]="!!playback.movie()"
+  (closed)="playback.close()"
+>
+  <div class="stack">
+    @if (playback.url()) {
+      <video
+        class="movie-player"
+        [src]="playback.url()"
+        controls
+        playsinline
+        preload="metadata"
+        aria-label="Movie player"
+      ></video>
+    } @else if (playback.loading()) {
+      <p role="status">Loading video…</p>
+    } @else {
+      <h2>Streaming is coming soon.</h2>
+      <p class="muted">
+        This is a preview of the SHIN collection. This title is not yet available to play. Save it
+        to your list for a future movie night.
+      </p>
+    }
+  </div>
+</shin-modal>
+<shin-notifications />

@@ -1,0 +1,45 @@
+<article class="movie-card">
+  <a
+    [routerLink]="['/movies', movie().slug]"
+    [queryParams]="{ type: movie().type }"
+    class="movie-card-link"
+    [attr.aria-label]="'View ' + movie().title"
+    ><div class="movie-poster" [style.background-color]="movie().color" aria-hidden="true">
+      @if (posterUrl() && failedPoster() !== posterUrl()) {
+        <img
+          class="content-poster-image"
+          [src]="posterUrl()"
+          alt=""
+          loading="lazy"
+          (error)="failedPoster.set(posterUrl())"
+        />
+      } @else {
+        <span class="poster-label">SHIN / CINEMA</span
+        ><img
+          class="poster-orb"
+          src="/assets/figma/poster-orb.svg"
+          alt=""
+          width="130"
+          height="130"
+          loading="lazy"
+        /><strong class="poster-title">{{ movie().title }}</strong>
+      }
+    </div>
+    <h3>{{ movie().title }}</h3>
+    <p class="movie-meta">
+      @if (movie().year) {
+        {{ movie().year }} ·
+      }
+      {{ movie().genre }}
+    </p></a
+  >
+  @if (removable()) {
+    <button
+      class="text-button remove-movie"
+      (click)="remove.emit(movie().slug)"
+      [attr.aria-label]="'Remove ' + movie().title + ' from watchlist'"
+    >
+      Remove from list
+    </button>
+  }
+</article>

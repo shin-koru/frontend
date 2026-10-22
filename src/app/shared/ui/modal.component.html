@@ -1,0 +1,21 @@
+<dialog
+  #dialog
+  class="shin-dialog"
+  [attr.aria-labelledby]="headingId"
+  (cancel)="closed.emit()"
+  (close)="closed.emit()"
+  (click)="backdrop($event)"
+>
+  <header class="dialog-header">
+    <h2 [id]="headingId">{{ heading() }}</h2>
+    <button
+      class="text-button dialog-close"
+      type="button"
+      aria-label="Close dialog"
+      (click)="closed.emit()"
+    >
+      ×
+    </button>
+  </header>
+  <div class="dialog-content"><ng-content /></div>
+</dialog>

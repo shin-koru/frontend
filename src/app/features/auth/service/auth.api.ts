@@ -16,10 +16,12 @@ export class AuthApi {
   }
 
   verifyOtp(req: OtpRequest): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>(`${this.baseUrl}/otp/verify`, req);
+    return this.http.post<TokenResponse>(`${this.baseUrl}/otp/verify`, req, {
+      withCredentials: true,
+    });
   }
 
   logout(): Observable<OKResponse> {
-    return this.http.post<OKResponse>(`${this.baseUrl}/logout`, {});
+    return this.http.post<OKResponse>(`${this.baseUrl}/logout`, {}, { withCredentials: true });
   }
 }

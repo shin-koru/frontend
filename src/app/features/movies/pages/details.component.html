@@ -1,0 +1,90 @@
+<main id="main-content" class="page details-page">
+  @if (loading()) {
+    <h1>Movie details</h1>
+    <p role="status" class="muted">Loading title…</p>
+  } @else if (error()) {
+    <section class="empty-state surface" role="alert">
+      <h1>This title couldn’t load.</h1>
+      <p class="muted">Please check your connection and try again.</p>
+      <a shinButton routerLink="/movies">Back to movies</a>
+    </section>
+  } @else if (movie(); as current) {
+    <shin-feature [movie]="current" [details]="true" />
+    <nav class="tabs" aria-label="Movie information">
+      @for (item of tabs; track item) {
+        <button
+          class="tab"
+          [class.active]="tab() === item"
+          [attr.aria-current]="tab() === item ? 'true' : null"
+          (click)="tab.set(item)"
+        >
+          {{ item }}
+        </button>
+      }
+    </nav>
+    @switch (tab()) {
+      @case ('Overview') {
+        <section class="movie-overview">
+          <div class="stack">
+            <h2>About {{ current.title }}</h2>
+            <p class="muted body-copy">
+              {{ current.description || 'No description is available for this title yet.' }}
+            </p>
+          </div>
+          <dl class="credits">
+            <div>
+              <dt>Type</dt>
+              <dd>{{ current.genre }}</dd>
+            </div>
+            @if (current.year) {
+              <div>
+                <dt>Released</dt>
+                <dd>{{ current.year }}</dd>
+              </div>
+            }
+            @if (current.duration) {
+              <div>
+                <dt>Duration</dt>
+                <dd>{{ current.duration }}</dd>
+              </div>
+            }
+            @if (current.classification) {
+              <div>
+                <dt>Age rating</dt>
+                <dd>{{ current.classification }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      }
+      @case ('Trailers') {
+        <section class="surface empty-state">
+          <h2>Trailers</h2>
+          <p class="muted">No trailer is available for this title yet.</p>
+        </section>
+      }
+      @case ('Reviews') {
+        <section class="surface empty-state">
+          <h2>Reviews</h2>
+          <p class="muted">Reviews are not available yet.</p>
+        </section>
+      }
+    }
+    @if (related().length) {
+      <section class="movie-section">
+        <h2>Explore more titles</h2>
+        <div class="movie-grid">
+          @for (item of related(); track item.slug) {
+            <shin-movie-card [movie]="item" />
+          }
+        </div>
+      </section>
+    }
+  } @else {
+    <section class="empty-state">
+      <h1>Movie not found.</h1>
+      <p class="muted">This title is not available in the collection.</p>
+      <a shinButton routerLink="/movies">Explore movies</a>
+    </section>
+  }
+</main>
