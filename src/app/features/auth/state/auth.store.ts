@@ -13,7 +13,7 @@ import { OKResponse } from '../../../shared';
 import { ToastService } from '../../../core/services/toast.service';
 import { OtpRequest, TokenResponse } from '../model/auth.model';
 import { AuthApi } from '../service/auth.api';
-import { StorageService } from '../../../core/services/storage.service';
+import { SessionService } from '../../../core/services/session.service';
 
 export interface AuthState {
   otpRequest: OtpRequest | null;
@@ -33,7 +33,7 @@ const initialState: AuthState = {
 export class AuthStore {
   private readonly api = inject(AuthApi);
   private readonly toast = inject(ToastService);
-  private readonly storage = inject(StorageService);
+  private readonly session = inject(SessionService);
 
   private readonly stateSubject = new BehaviorSubject<AuthState>(initialState);
 
@@ -102,7 +102,7 @@ export class AuthStore {
 
     return this.api.verifyOtp(payload).pipe(
       tap((tokenResponse) => {
-        this.storage.setItem('token', tokenResponse.accessToken);
+        this.session.acceptToken(tokenResponse.accessToken);
         this.patch({ loading: false });
         this.toast.showSuccessToast('Authenticated!');
       }),
@@ -118,7 +118,7 @@ export class AuthStore {
 
     return this.api.logout().pipe(
       tap(() => {
-        this.storage.removeItem('token');
+        this.session.clear();
         this.patch({ loading: false });
         this.toast.showSuccessToast('Logged out!');
       }),

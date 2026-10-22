@@ -1,0 +1,260 @@
+<section class="surface stack admin-movie" aria-label="Series management">
+  <div class="studio-heading">
+    <div>
+      <h2>Seasons &amp; episodes</h2>
+      <p class="muted">Create drafts, upload episode videos, and publish when ready.</p>
+    </div>
+    <button shinButton (click)="newSeason()" [disabled]="busy()">New season</button>
+  </div>
+  <p class="muted">
+    Viewers see an episode only when the series, season, and episode are all published. Archiving
+    keeps your records and files.
+  </p>
+  @if (message()) {
+    <p role="status" class="studio-notice">{{ message() }}</p>
+  }
+  @if (error()) {
+    <p role="alert" class="field-error">{{ error() }}</p>
+    <div class="upload-actions">
+      <button shinButton variant="secondary" (click)="loadSeasons()">Reload seasons</button>
+      @if (season()) {
+        <button shinButton variant="secondary" (click)="loadEpisodes()">Reload episodes</button>
+      }
+    </div>
+  }
+  @if (loading()) {
+    <p role="status">Loading seasons...</p>
+  }
+  <label class="stack"
+    >Season<select
+      aria-label="Season"
+      [value]="season()?.id ?? ''"
+      (change)="chooseSeason($event)"
+      [disabled]="busy()"
+    >
+      <option value="">Select a season</option>
+      @for (item of seasons(); track item.id) {
+        <option [value]="item.id">
+          Season {{ item.seasonNumber }} - {{ item.title || 'Untitled' }} | {{ item.status }}
+        </option>
+      }
+    </select></label
+  >
+  @if (!loading() && !seasons().length && !seasonEditor()) {
+    <p class="muted">No seasons yet. Choose New season to start.</p>
+  }
+  @if (seasonEditor()) {
+    <form #seasonForm="ngForm" class="stack studio-fields" (ngSubmit)="saveSeason()">
+      <div class="studio-heading">
+        <h3>Season details</h3>
+        <span class="studio-status">{{ season()?.status ?? 'New draft' }}</span>
+      </div>
+      <fieldset class="stack studio-fields" [disabled]="busy()">
+        <div class="studio-form-grid">
+          <label class="stack"
+            >Season number<input
+              name="seasonNumber"
+              type="number"
+              min="1"
+              max="2147483647"
+              step="1"
+              required
+              [(ngModel)]="seasonDraft.seasonNumber"
+              (ngModelChange)="seasonDirty.set(true)"
+          /></label>
+          <label class="stack"
+            >Season title<input
+              name="seasonTitle"
+              maxlength="255"
+              [(ngModel)]="seasonDraft.title"
+              (ngModelChange)="seasonDirty.set(true)"
+          /></label>
+        </div>
+        <label class="stack"
+          >Season description<textarea
+            name="seasonDescription"
+            rows="3"
+            maxlength="20000"
+            [(ngModel)]="seasonDraft.description"
+            (ngModelChange)="seasonDirty.set(true)"
+          ></textarea>
+        </label>
+      </fieldset>
+      <div class="upload-actions">
+        <button
+          shinButton
+          type="submit"
+          [disabled]="busy() || seasonForm.invalid || (!!season() && !seasonDirty())"
+        >
+          Save season</button
+        ><button
+          shinButton
+          type="button"
+          variant="secondary"
+          (click)="discardSeason()"
+          [disabled]="busy()"
+        >
+          Discard season changes
+        </button>
+        @if (seasonDirty()) {
+          <span class="muted">Unsaved season changes</span>
+        }
+      </div>
+    </form>
+  }
+  @if (season(); as item) {
+    <div class="upload-actions">
+      @if (item.status !== 'PUBLISHED') {
+        <button
+          shinButton
+          [disabled]="busy() || hasChanges()"
+          (click)="changeStatus('season', 'publish')"
+        >
+          Publish season
+        </button>
+      }
+      @if (item.status !== 'ARCHIVED') {
+        <button
+          shinButton
+          variant="secondary"
+          [disabled]="busy() || hasChanges()"
+          (click)="changeStatus('season', 'archive')"
+        >
+          Archive season
+        </button>
+      }
+    </div>
+    <div class="studio-heading">
+      <h3>Episodes</h3>
+      <button shinButton (click)="newEpisode()" [disabled]="busy()">New episode</button>
+    </div>
+    <label class="stack"
+      >Episode<select
+        aria-label="Episode"
+        [value]="episode()?.id ?? ''"
+        (change)="chooseEpisode($event)"
+        [disabled]="busy()"
+      >
+        <option value="">Select an episode</option>
+        @for (value of episodes(); track value.id) {
+          <option [value]="value.id">
+            Episode {{ value.episodeNumber }} - {{ value.title }} | {{ value.status }}
+          </option>
+        }
+      </select></label
+    >
+    @if (!episodes().length && !episodeEditor()) {
+      <p class="muted">No episodes yet. Choose New episode to add one.</p>
+    }
+  }
+  @if (episodeEditor()) {
+    <form #episodeForm="ngForm" class="stack studio-fields" (ngSubmit)="saveEpisode()">
+      <div class="studio-heading">
+        <h3>Episode details</h3>
+        <span class="studio-status">{{ episode()?.status ?? 'New draft' }}</span>
+      </div>
+      <fieldset class="stack studio-fields" [disabled]="busy()">
+        <div class="studio-form-grid">
+          <label class="stack"
+            >Episode number<input
+              name="episodeNumber"
+              type="number"
+              min="1"
+              max="2147483647"
+              step="1"
+              required
+              [(ngModel)]="episodeDraft.episodeNumber"
+              (ngModelChange)="episodeDirty.set(true)"
+          /></label>
+          <label class="stack"
+            >Episode title<input
+              name="episodeTitle"
+              required
+              maxlength="255"
+              [(ngModel)]="episodeDraft.title"
+              (ngModelChange)="episodeDirty.set(true)"
+          /></label>
+          <label class="stack"
+            >Episode release date<input
+              name="episodeReleaseDate"
+              type="date"
+              [(ngModel)]="episodeDraft.releaseDate"
+              (ngModelChange)="episodeDirty.set(true)"
+          /></label>
+          <label class="stack"
+            >Episode runtime (seconds)<input
+              name="episodeDuration"
+              type="number"
+              min="0"
+              max="2147483647"
+              step="1"
+              [(ngModel)]="episodeDraft.durationSeconds"
+              (ngModelChange)="episodeDirty.set(true)"
+          /></label>
+        </div>
+        <label class="stack"
+          >Episode description<textarea
+            name="episodeDescription"
+            rows="4"
+            maxlength="20000"
+            [(ngModel)]="episodeDraft.description"
+            (ngModelChange)="episodeDirty.set(true)"
+          ></textarea>
+        </label>
+      </fieldset>
+      <div class="upload-actions">
+        <button
+          shinButton
+          type="submit"
+          [disabled]="busy() || episodeForm.invalid || (!!episode() && !episodeDirty())"
+        >
+          Save episode</button
+        ><button
+          shinButton
+          type="button"
+          variant="secondary"
+          (click)="discardEpisode()"
+          [disabled]="busy()"
+        >
+          Discard episode changes
+        </button>
+        @if (episodeDirty()) {
+          <span class="muted">Unsaved episode changes</span>
+        }
+      </div>
+    </form>
+  }
+  @if (episode(); as item) {
+    <shin-upload-field
+      [taskKey]="'episode:' + item.id + ':video'"
+      purpose="video"
+      [episodeId]="item.id"
+      label="Episode video"
+      (saved)="videoSaved(item.id, $event)"
+    />
+    <p class="muted">
+      {{ item.videoKey ? 'Episode video saved' : 'Upload a video before publishing this episode.' }}
+    </p>
+    <div class="upload-actions">
+      @if (item.status !== 'PUBLISHED') {
+        <button
+          shinButton
+          [disabled]="busy() || hasChanges() || !item.videoKey"
+          (click)="changeStatus('episode', 'publish')"
+        >
+          Publish episode
+        </button>
+      }
+      @if (item.status !== 'ARCHIVED') {
+        <button
+          shinButton
+          variant="secondary"
+          [disabled]="busy() || hasChanges()"
+          (click)="changeStatus('episode', 'archive')"
+        >
+          Archive episode
+        </button>
+      }
+    </div>
+  }
+</section>

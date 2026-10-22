@@ -1,4 +1,5 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SILENT_HTTP_ERROR } from '../../../core/interceptors/http-context';
 import { inject, Injectable } from '@angular/core';
 import { CreateProfilePayload, Profile } from '../model/profile.model';
 import { Observable } from 'rxjs';
@@ -11,7 +12,9 @@ export class ProfileApiService {
   private readonly baseUrl = '/api/profile';
 
   public getProfileMe(): Observable<Profile> {
-    return this.http.get<Profile>(`${this.baseUrl}/@me`);
+    return this.http.get<Profile>(`${this.baseUrl}/@me`, {
+      context: new HttpContext().set(SILENT_HTTP_ERROR, true),
+    });
   }
 
   public createProfile(data: CreateProfilePayload): Observable<void> {

@@ -1,0 +1,111 @@
+.plans-page {
+  max-width: 1200px;
+  margin: auto;
+}
+.plans-heading {
+  max-width: 680px;
+}
+.plans-heading h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  margin: 0.5rem 0 1rem;
+}
+.membership,
+.promo-activation {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid #34303d;
+  border-radius: 16px;
+}
+.membership-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+.membership h3 {
+  font-size: 1.6rem;
+  margin: 0.5rem 0;
+}
+.source-badge {
+  padding: 0.5rem 0.8rem;
+  background: #342745;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+.promo-activation form {
+  margin-top: 1.5rem;
+}
+.promo-activation label {
+  display: block;
+  margin-bottom: 0.6rem;
+}
+.promo-input-row {
+  display: flex;
+  gap: 0.75rem;
+}
+.promo-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  color: inherit;
+  background: #15131b;
+  border: 1px solid #71677e;
+  border-radius: 8px;
+  font: inherit;
+}
+.promo-input-row input:focus {
+  outline: 2px solid #bf9aff;
+  outline-offset: 2px;
+}
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.plan-card {
+  padding: 1.75rem;
+  border: 1px solid #34303d;
+  border-radius: 16px;
+}
+.plan-card h3 {
+  font-size: 1.5rem;
+}
+.plan-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+.plan-price span {
+  font-size: 1rem;
+  font-weight: 400;
+}
+.plan-card ul {
+  padding-left: 1.2rem;
+  line-height: 2;
+}
+.feedback {
+  padding: 1rem 1.25rem;
+  border-left: 3px solid #bf9aff;
+}
+.feedback.error {
+  border-color: #f5a6b6;
+}
+.cancel-confirm {
+  border-top: 1px solid #514358;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+.cancel-confirm button {
+  margin: 0.25rem 0.5rem 0.25rem 0;
+}
+@media (max-width: 600px) {
+  .promo-input-row,
+  .membership-summary {
+    flex-direction: column;
+  }
+  .promo-input-row button {
+    width: 100%;
+  }
+  .source-badge {
+    align-self: flex-start;
+  }
+}

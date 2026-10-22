@@ -1,0 +1,115 @@
+<main id="main-content" class="page profile-page">
+  <h1>Your cinema, your way.</h1>
+  @if (loading()) {
+    <p class="muted" role="status">Loading your profile…</p>
+  } @else if (failed()) {
+    <section class="surface empty-state" role="alert">
+      <h2>We couldn’t load your profile.</h2>
+      <p class="muted">Please check your connection and try again.</p>
+      <button shinButton (click)="loadProfile()">Try again</button>
+    </section>
+  } @else if (profile(); as user) {
+    <section class="surface profile-summary" aria-label="Your profile">
+      <div class="avatar" aria-hidden="true">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="" (error)="avatarUrl.set('')" />
+        } @else {
+          {{ initials() }}
+        }
+      </div>
+      <div class="profile-identity">
+        <h2>{{ fullName() }}</h2>
+        <p class="muted">{{ user.username ? '@' + user.username : 'SHIN member' }}</p>
+        <p class="eyebrow accent">SHIN MEMBER</p>
+      </div>
+      <button shinButton variant="secondary" (click)="info.set('Change profile photo')">
+        Change photo
+      </button>
+    </section>
+  }
+  <nav class="tabs profile-tabs" aria-label="Profile sections">
+    @for (item of tabs; track item) {
+      <button
+        class="tab"
+        [class.active]="tab() === item"
+        [attr.aria-current]="tab() === item ? 'true' : null"
+        (click)="tab.set(item)"
+      >
+        {{ item }}
+      </button>
+    }
+  </nav>
+  @switch (tab()) {
+    @case ('My watchlist') {
+      <section class="movie-section">
+        <h2>Saved for a great night in</h2>
+        @if (watchlist.loading()) {
+          <p role="status" class="muted">Loading your saved titles…</p>
+        } @else if (watchlist.error()) {
+          <p role="alert" class="field-error">
+            Some saved titles could not load. Refresh the page to try again.
+          </p>
+        } @else if (watchlist.movies().length) {
+          <div class="movie-grid">
+            @for (movie of watchlist.movies(); track movie.slug) {
+              <shin-movie-card
+                [movie]="movie"
+                [removable]="true"
+                (remove)="watchlist.toggle($event)"
+              />
+            }
+          </div>
+        } @else {
+          <div class="surface empty-state">
+            <h3>Your next great watch starts here.</h3>
+            <p class="muted">Add movies to My list and find them here whenever you’re ready.</p>
+            <a shinButton variant="secondary" routerLink="/movies">Explore movies</a>
+          </div>
+        }
+      </section>
+    }
+    @case ('Account settings') {
+      <section class="surface settings-panel stack">
+        <h2>Account settings</h2>
+        @if (profile(); as user) {
+          <dl class="credits">
+            <div>
+              <dt>Name</dt>
+              <dd>{{ fullName() }}</dd>
+            </div>
+            <div>
+              <dt>Username</dt>
+              <dd>{{ user.username }}</dd>
+            </div>
+            <div>
+              <dt>Country</dt>
+              <dd>{{ user.country }}</dd>
+            </div>
+          </dl>
+        }
+        <p class="muted">Your watchlist is stored on this device.</p>
+        <button shinButton variant="secondary" [disabled]="loggingOut()" (click)="logout()">
+          {{ loggingOut() ? 'Signing out…' : 'Sign out' }}
+        </button>
+      </section>
+    }
+    @case ('Membership') {
+      <section class="surface settings-panel stack">
+        <h2>Your membership</h2>
+        <p class="muted">
+          You’re exploring the SHIN collection. Paid streaming plans are not available yet.
+        </p>
+      </section>
+    }
+  }
+  <section class="surface plan-summary">
+    <div>
+      <h3>Streaming preview</h3>
+      <p class="muted">Discover stories · Build your watchlist</p>
+    </div>
+    <button shinButton variant="secondary" (click)="tab.set('Membership')">Manage plan</button>
+  </section>
+</main>
+<shin-modal [heading]="info() || ''" [open]="!!info()" (closed)="info.set(null)"
+  ><shin-upload-field taskKey="profile-avatar" purpose="avatar" label="Profile image"
+/></shin-modal>

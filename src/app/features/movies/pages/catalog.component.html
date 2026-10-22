@@ -1,0 +1,131 @@
+<main id="main-content" class="page catalog-page">
+  <h1>{{ type() === 'series' ? 'Discover your next series.' : 'Find your next obsession.' }}</h1>
+  <p class="page-intro muted">
+    Discover extraordinary stories, from timeless classics to new favorites.
+  </p>
+  <label class="search-bar"
+    ><span aria-hidden="true">⌕</span><span class="sr-only">Search titles and descriptions</span
+    ><input
+      id="catalog-search"
+      type="search"
+      [value]="query()"
+      (input)="setFilter('q', $any($event.target).value)"
+      placeholder="Search titles and descriptions…"
+      autocomplete="off"
+  /></label>
+  <div class="catalog-filters">
+    <label class="sr-only" for="content-type">Content type</label
+    ><select
+      id="content-type"
+      class="filter-select"
+      [value]="type()"
+      (change)="setFilter('type', $any($event.target).value)"
+    >
+      <option value="">All types</option>
+      <option value="movie">Movies</option>
+      <option value="series">Series</option>
+      <option value="anime">Anime</option>
+      <option value="cartoon">Cartoons</option></select
+    ><label class="sr-only" for="year">Release year</label
+    ><select
+      id="year"
+      class="filter-select"
+      [value]="year()"
+      (change)="setFilter('year', $any($event.target).value)"
+    >
+      <option value="">Release year</option>
+      @for (item of years; track item) {
+        <option>{{ item }}</option>
+      }
+    </select>
+    <label class="sr-only" for="catalog-genre">Movie genre</label>
+    <select
+      id="catalog-genre"
+      class="filter-select"
+      [ngModel]="genre()"
+      [disabled]="genres.loading() || genres.error()"
+      (ngModelChange)="setFilter('genre', $event)"
+    >
+      <option value="">{{ genres.loading() ? 'Loading genres...' : 'All movie genres' }}</option>
+      @if (unknownGenre()) {
+        <option [value]="genre()">Selected genre (unavailable)</option>
+      }
+      @for (item of genres.genres(); track item.id) {
+        <option [value]="item.id">{{ item.name }}</option>
+      }
+    </select>
+  </div>
+  <p class="muted">Choosing a genre shows movies only.</p>
+  @if (genres.error()) {
+    <p role="alert">
+      Genres could not load.
+      <button shinButton variant="secondary" (click)="genres.load()">Retry genres</button>
+    </p>
+  }
+  <button shinButton variant="secondary" (click)="reset()">Clear filters</button>
+  @if (invalid()) {
+    <p role="status">
+      Use 3–120 characters to search, a valid content type and year (1888–2100), and a movie genre.
+    </p>
+  }
+  @if (!invalid()) {
+    <div class="catalog-results">
+      <p class="muted" role="status">
+        {{ catalog.total() }} {{ catalog.total() === 1 ? 'title' : 'titles' }} found
+      </p>
+      <label class="sort-label"
+        >Sort by:
+        <select
+          aria-label="Sort movies"
+          [value]="sort()"
+          (change)="setFilter('sort', $any($event.target).value)"
+        >
+          <option value="title">Title A–Z</option>
+          <option value="newest">Newest releases</option>
+          <option value="recent">Recently added</option>
+        </select></label
+      >
+    </div>
+    @if (catalog.error()) {
+      <section class="surface empty-state" role="alert">
+        <h2>The collection couldn’t load.</h2>
+        <p class="muted">Please check your connection and try again.</p>
+        <button shinButton (click)="catalog.loadMore()">Try again</button>
+      </section>
+    }
+    @if (catalog.loading()) {
+      <p class="muted" role="status">Loading titles…</p>
+    }
+    <section class="movie-section">
+      <h2>Explore the collection</h2>
+      @if (catalog.movies().length) {
+        <div class="movie-grid">
+          @for (movie of catalog.movies(); track movie.slug) {
+            <shin-movie-card [movie]="movie" />
+          }
+        </div>
+      } @else if (!catalog.loading() && !catalog.error()) {
+        <div class="surface empty-state">
+          <h3>No titles found.</h3>
+          <p class="muted">
+            {{ 'No published titles match your search. Try clearing your filters.' }}
+          </p>
+          <button shinButton variant="secondary" (click)="reset()">Clear filters</button>
+        </div>
+      }
+    </section>
+    @if (catalog.hasMore()) {
+      <button
+        shinButton
+        variant="secondary"
+        [disabled]="catalog.loading()"
+        (click)="catalog.loadMore()"
+      >
+        {{ catalog.loading() ? 'Loading…' : 'Load more titles' }}
+      </button>
+    }
+    @if (catalog.needsRefinement()) {
+      <p role="status">Narrow your search or filters to see more matching titles.</p>
+    }
+  }
+</main>

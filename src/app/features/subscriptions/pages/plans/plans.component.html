@@ -1,0 +1,156 @@
+<main id="main-content" class="page plans-page">
+  <div class="plans-heading">
+    <p class="eyebrow accent">YOUR SHIN MEMBERSHIP</p>
+    <h1>More stories. Your way.</h1>
+    <p class="muted">Explore plans and manage your subscription in one place.</p>
+  </div>
+  <section class="surface membership" aria-labelledby="membership-title">
+    <h2 id="membership-title">Your subscription</h2>
+    @if (subscriptions.loadingCurrent()) {
+      <p role="status">Loading your subscription...</p>
+    } @else if (subscriptions.currentError()) {
+      <p role="alert">We could not load your subscription.</p>
+      <button shinButton variant="secondary" (click)="subscriptions.refreshCurrent()">
+        Retry subscription
+      </button>
+    } @else if (subscriptions.current().subscription; as current) {
+      <div class="membership-summary">
+        <div>
+          <p class="eyebrow accent">{{ current.status }}</p>
+          <h3>{{ subscriptions.current().plan?.name || 'Your plan' }}</h3>
+          <p class="muted">
+            Started {{ current.startedAt | date: 'mediumDate' }} · Expires
+            {{ current.expiresAt | date: 'medium' }}
+          </p>
+        </div>
+        <span class="source-badge">{{
+          current.activationMethod === 'PROMO_CODE' ? 'Promo code' : 'Subscription'
+        }}</span>
+      </div>
+      @if (confirmCancel()) {
+        <div class="cancel-confirm" role="group" aria-label="Confirm cancellation">
+          <p>Cancel now? Your subscription access will end immediately.</p>
+          <button
+            shinButton
+            [disabled]="subscriptions.busy()"
+            (click)="subscriptions.cancel(); confirmCancel.set(false)"
+          >
+            Confirm cancellation</button
+          ><button
+            shinButton
+            variant="secondary"
+            [disabled]="subscriptions.busy()"
+            (click)="confirmCancel.set(false)"
+          >
+            Keep subscription
+          </button>
+        </div>
+      } @else {
+        <button
+          shinButton
+          variant="secondary"
+          [disabled]="subscriptions.busy()"
+          (click)="confirmCancel.set(true)"
+        >
+          Cancel subscription
+        </button>
+      }
+    } @else {
+      <p class="muted">
+        You do not have an active subscription. Have a promo code? Activate it below.
+      </p>
+    }
+  </section>
+  <section class="surface promo-activation" aria-labelledby="promo-title">
+    <div>
+      <h2 id="promo-title">Have a promo code?</h2>
+      <p class="muted" id="promo-help">
+        Your code activates its included plan. Each code can be used once per account.
+      </p>
+    </div>
+    <form (ngSubmit)="subscriptions.redeem(code())">
+      <label for="promo-code">Promo code</label>
+      <div class="promo-input-row">
+        <input
+          id="promo-code"
+          name="promoCode"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="32"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)"
+          aria-describedby="promo-help"
+          placeholder="Enter your 32-character code"
+          [disabled]="subscriptions.busy()"
+        /><button
+          shinButton
+          type="submit"
+          [disabled]="
+            subscriptions.busy() ||
+            subscriptions.loadingCurrent() ||
+            subscriptions.currentError() ||
+            !!subscriptions.current().subscription
+          "
+        >
+          {{ subscriptions.busy() ? 'Please wait...' : 'Activate code' }}
+        </button>
+      </div>
+      @if (subscriptions.current().subscription) {
+        <p class="muted">
+          You already have an active subscription. A promo code cannot replace it.
+        </p>
+      }
+    </form>
+  </section>
+  @if (subscriptions.message()) {
+    <p class="surface feedback" role="status">{{ subscriptions.message() }}</p>
+  }
+  @if (subscriptions.actionError()) {
+    <p class="surface feedback error" role="alert">{{ subscriptions.actionError() }}</p>
+  }
+  <section aria-labelledby="plans-title">
+    <h2 id="plans-title">Available plans</h2>
+    <p class="muted">
+      Payment activation is not available yet. You can activate a plan with a valid promo code.
+    </p>
+    @if (subscriptions.plansError()) {
+      <p role="alert">Plans could not load.</p>
+      <button shinButton variant="secondary" (click)="subscriptions.loadPlans()">
+        Retry plans
+      </button>
+    }
+    <div class="plans-grid">
+      @for (plan of subscriptions.plans(); track plan.id) {
+        <article class="surface plan-card">
+          <p class="eyebrow accent">{{ plan.maxQuality.replace('_', ' ') }}</p>
+          <h3>{{ plan.name }}</h3>
+          <p class="plan-price">
+            {{ price(plan) }} <span class="muted">/ {{ plan.duration }} days</span>
+          </p>
+          <ul>
+            <li>Up to {{ plan.maxDevices }} {{ plan.maxDevices === 1 ? 'device' : 'devices' }}</li>
+            <li>{{ plan.maxQuality.replace('_', ' ') }} maximum quality</li>
+            <li>{{ plan.duration }} days of access</li>
+          </ul>
+          <p class="muted">Activate with a code for this plan.</p>
+        </article>
+      }
+    </div>
+    @if (subscriptions.loadingPlans()) {
+      <p role="status">Loading plans...</p>
+    } @else if (!subscriptions.plansError() && !subscriptions.plans().length) {
+      <p class="surface feedback">No plans are available yet. Please check back later.</p>
+    }
+    @if (subscriptions.plans().length < subscriptions.total()) {
+      <button
+        shinButton
+        variant="secondary"
+        [disabled]="subscriptions.loadingPlans()"
+        (click)="subscriptions.loadPlans()"
+      >
+        Load more plans
+      </button>
+    }
+  </section>
+</main>

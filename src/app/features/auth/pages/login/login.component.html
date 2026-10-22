@@ -1,57 +1,142 @@
-<main class="login-page">
-  <section class="login-card" aria-labelledby="login-title">
-
-    <div class="card-header">
-      @if (step() === 'code') {
-        <button type="button" class="back-btn" (click)="editIdentifier()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M8.5 2.5L4 7l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Изменить email или номер
+<main id="main-content" class="page login-page">
+  <section class="login-story" aria-label="Welcome to SHIN">
+    <div
+      class="landscape login-art"
+      role="img"
+      aria-label="Sun setting over a cinematic desert landscape"
+    ></div>
+    <h2>Great stories.<br />Closer than ever.</h2>
+    <p class="muted">Your next favorite film is waiting.</p>
+  </section>
+  <section class="login-form-panel" aria-labelledby="login-title">
+    <h1 id="login-title">{{ step() === 'identifier' ? 'Welcome back.' : 'Check your inbox.' }}</h1>
+    <p class="muted">
+      {{
+        step() === 'identifier'
+          ? 'Sign in and pick up where you left off.'
+          : 'Enter the verification code sent to ' + loginForm.controls.identifier.value + '.'
+      }}
+    </p>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="stack login-form" novalidate>
+      @if (step() === 'identifier') {
+        <div class="identifier-options" role="group" aria-label="Sign-in method">
+          @for (option of typeOptions; track option.value) {
+            <button
+              type="button"
+              class="tab"
+              [class.active]="loginForm.controls.type.value === option.value"
+              [attr.aria-pressed]="loginForm.controls.type.value === option.value"
+              (click)="loginForm.controls.type.setValue($any(option.value))"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+        <div class="field">
+          <label for="identifier">{{
+            loginForm.controls.type.value === 'email' ? 'Email address' : 'Phone number'
+          }}</label
+          ><input
+            id="identifier"
+            formControlName="identifier"
+            [type]="loginForm.controls.type.value === 'email' ? 'email' : 'tel'"
+            [autocomplete]="loginForm.controls.type.value === 'email' ? 'email' : 'tel'"
+            [placeholder]="
+              loginForm.controls.type.value === 'email' ? 'you@example.com' : '+77001234567'
+            "
+            [attr.aria-invalid]="
+              loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid
+            "
+            aria-describedby="identifier-hint"
+          />
+          <p
+            id="identifier-hint"
+            class="field-hint"
+            [class.field-error]="
+              loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid
+            "
+          >
+            {{
+              loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid
+                ? 'Enter a valid ' +
+                  (loginForm.controls.type.value === 'email'
+                    ? 'email address.'
+                    : 'phone number, including country code.')
+                : 'We’ll send you a sign-in code. No password needed.'
+            }}
+          </p>
+        </div>
+      } @else {
+        <div class="field">
+          <label for="code">Verification code</label
+          ><input
+            id="code"
+            formControlName="code"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            placeholder="Enter your code"
+            [attr.aria-invalid]="loginForm.controls.code.touched && loginForm.controls.code.invalid"
+            aria-describedby="code-hint"
+          />
+          <p
+            id="code-hint"
+            class="field-hint"
+            [class.field-error]="loginForm.controls.code.touched && loginForm.controls.code.invalid"
+          >
+            {{
+              loginForm.controls.code.touched && loginForm.controls.code.invalid
+                ? 'Enter the 6-digit code.'
+                : 'Use the code sent to your email or phone.'
+            }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-button accent"
+          [disabled]="loading$ | async"
+          (click)="editIdentifier()"
+        >
+          Use a different email or phone
         </button>
       }
-      <div class="brand-mark" aria-hidden="true">S</div>
-      <div class="heading">
-        <p class="eyebrow">SHIN</p>
-        <h1 id="login-title">{{ step() === 'identifier' ? 'Добро пожаловать' : 'Проверьте код' }}</h1>
-        <p>@if (step() === 'identifier') { Введите данные — мы отправим вам одноразовый код для входа. } @else { Код отправлен на <strong>{{ loginForm.controls.identifier.value }}</strong>. }</p>
-      </div>
-    </div>
-
-    <div class="card-body">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-        @if (step() === 'identifier') {
-          <div class="field">
-            <label>Способ входа</label>
-            <p-selectbutton [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" />
-          </div>
-          <div class="field">
-            <label for="identifier">{{ loginForm.value.type === 'email' ? 'Электронная почта' : 'Номер телефона' }}</label>
-            <div class="input-wrap">
-              <input pInputText id="identifier" formControlName="identifier"
-                [autocomplete]="loginForm.value.type === 'email' ? 'email' : 'tel'"
-                [placeholder]="loginForm.value.type === 'email' ? 'name@example.com' : '+7 700 123 45 67'" />
-            </div>
-            @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) {
-              <small class="error">{{ loginForm.controls.identifier.hasError('required') ? 'Это поле обязательно.' : 'Введите корректные данные.' }}</small>
-            }
-          </div>
-          <p-button type="submit" label="Получить код" [loading]="(loading$ | async) ?? false" styleClass="submit-btn" />
-        } @else {
-          <div class="field">
-            <label for="code">Код подтверждения</label>
-            <div class="input-wrap">
-              <input pInputText id="code" formControlName="code" inputmode="numeric"
-                autocomplete="one-time-code" maxlength="8" placeholder="Введите код" />
-            </div>
-            @if (loginForm.controls.code.touched && loginForm.controls.code.invalid) {
-              <small class="error">Введите код из 4–8 цифр.</small>
-            }
-          </div>
-          <p-button type="submit" label="Продолжить" [loading]="(loading$ | async) ?? false" styleClass="submit-btn" />
-        }
-      </form>
-    </div>
-
+      @if (error()) {
+        <p class="field-error" role="alert">{{ error() }}</p>
+      }
+      <button shinButton type="submit" class="full-width" [disabled]="loading$ | async">
+        {{
+          (loading$ | async)
+            ? 'Please wait…'
+            : step() === 'identifier'
+              ? 'Send sign-in code'
+              : 'Sign in'
+        }}
+      </button>
+      @if (step() === 'code') {
+        <button
+          shinButton
+          variant="secondary"
+          type="button"
+          [disabled]="loading$ | async"
+          (click)="requestCode()"
+        >
+          Resend code
+        </button>
+      }
+    </form>
+    <div class="form-divider">or continue with</div>
+    <button
+      shinButton
+      variant="secondary"
+      class="full-width"
+      disabled
+      aria-describedby="google-status"
+    >
+      Continue with Google
+    </button>
+    <p id="google-status" class="muted field-hint">Google sign-in is coming soon.</p>
+    <p class="accent">New to SHIN? Your first sign-in creates your account.</p>
+    <p class="muted">By signing in, you agree to our Terms of Service and Privacy Policy.</p>
   </section>
 </main>

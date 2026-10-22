@@ -1,0 +1,20 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="342" height="240" viewBox="0 0 342 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Dune / editable cinematic landscape">
+<g clip-path="url(#clip0_0_24)">
+<rect width="342" height="240" rx="12" fill="url(#paint0_linear_0_24)"/>
+<circle id="Ellipse" cx="212.04" cy="101.28" r="82.08" fill="#EBA66E" fill-opacity="0.8"/>
+<ellipse id="Ellipse_2" cx="171" cy="235.2" rx="307.8" ry="96" fill="#302124"/>
+<ellipse id="Ellipse_3" cx="212.04" cy="266.4" rx="307.8" ry="96" fill="#261C1F"/>
+<ellipse id="Ellipse_4" cx="253.08" cy="297.6" rx="307.8" ry="96" fill="#1C171A"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_24" x1="171" y1="0" x2="171" y2="240" gradientUnits="userSpaceOnUse">
+<stop stop-color="#854A33"/>
+<stop offset="1" stop-color="#1F1A2B"/>
+</linearGradient>
+<clipPath id="clip0_0_24">
+<rect width="342" height="240" rx="12" fill="white"/>
+</clipPath>
+</defs>
+</svg>

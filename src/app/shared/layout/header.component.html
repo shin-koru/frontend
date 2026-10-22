@@ -1,0 +1,46 @@
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="site-header">
+  <a class="wordmark" routerLink="/" aria-label="SHIN home">SHIN</a>
+  <nav class="desktop-nav" aria-label="Main navigation">
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+      >Home</a
+    >
+    <a routerLink="/movies" routerLinkActive="active" ariaCurrentWhenActive="page">Movies</a>
+    <a routerLink="/plans" routerLinkActive="active" ariaCurrentWhenActive="page">Plans</a>
+    <a class="series-link" routerLink="/movies" [queryParams]="{ type: 'series' }">Series</a>
+    <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">My list</a>
+  </nav>
+  <nav class="header-tools" aria-label="Account and search">
+    @if (admin.isAdmin()) {
+      <a routerLink="/admin/media">Studio</a>
+      <a routerLink="/admin/subscriptions">Memberships</a>
+    }
+    <a routerLink="/movies" fragment="catalog-search">Search</a>
+    <span class="language" lang="en" aria-label="Language: English">EN</span>
+    <a class="profile-link" routerLink="/profile">Profile</a>
+    <button
+      class="menu-toggle text-button"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="mobile-navigation"
+      (click)="menuOpen.update(toggle)"
+    >
+      {{ menuOpen() ? 'Close' : 'Menu' }}
+    </button>
+  </nav>
+</header>
+@if (menuOpen()) {
+  <nav id="mobile-navigation" class="mobile-nav" aria-label="Mobile navigation">
+    @if (admin.isAdmin()) {
+      <a routerLink="/admin/media">Movie uploads</a>
+      <a routerLink="/admin/subscriptions">Manage subscriptions</a>
+    }
+    <a routerLink="/plans">Plans / Subscription</a><a routerLink="/">Home</a
+    ><a routerLink="/movies">Movies</a
+    ><a routerLink="/movies" [queryParams]="{ type: 'series' }">Series</a
+    ><a routerLink="/profile">My list / Profile</a><a routerLink="/auth/login">Sign in</a>
+  </nav>
+}

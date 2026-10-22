@@ -6,7 +6,7 @@
   background:
     radial-gradient(ellipse at top right, rgba(82, 137, 173, 0.14) 0%, transparent 45%),
     radial-gradient(ellipse at bottom left, rgba(36, 60, 76, 0.06) 0%, transparent 40%),
-    var(--color-bg, #F4FCFB);
+    var(--color-bg, #f4fcfb);
   box-sizing: border-box;
   min-height: 100dvh;
   padding: clamp(1.25rem, 5vw, 4rem) 1.25rem;
@@ -14,7 +14,7 @@
 
 .profile-card {
   background: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #ACBCBF);
+  border: 1px solid var(--color-border, #acbcbf);
   border-radius: 1.5rem;
   box-shadow:
     0 20px 60px rgba(36, 60, 76, 0.1),
@@ -33,14 +33,14 @@
 }
 
 .progress span {
-  background: var(--color-primary, #5289AD);
+  background: var(--color-primary, #5289ad);
   display: block;
   height: 100%;
   width: 100%;
 }
 
 .eyebrow {
-  color: var(--color-primary, #5289AD);
+  color: var(--color-primary, #5289ad);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -49,7 +49,7 @@
 }
 
 h1 {
-  color: var(--color-dark, #243C4C);
+  color: var(--color-dark, #243c4c);
   font-size: clamp(1.75rem, 5vw, 2.25rem);
   font-weight: 700;
   letter-spacing: -0.035em;
@@ -73,7 +73,7 @@ form {
 }
 
 label {
-  color: var(--color-dark, #243C4C);
+  color: var(--color-dark, #243c4c);
   font-size: 0.875rem;
   font-weight: 600;
 }

@@ -1,0 +1,32 @@
+<footer class="site-footer">
+  <p>SHIN <span class="footer-slash">/</span> Stories worth staying in for.</p>
+  <nav aria-label="Footer">
+    <button class="text-button" (click)="info.set('Help center')">Help center</button
+    ><button class="text-button" (click)="info.set('Privacy')">Privacy</button
+    ><button class="text-button" (click)="info.set('Terms')">Terms</button
+    ><span>© {{ year }} SHIN</span>
+  </nav>
+</footer>
+<shin-modal [heading]="info() || ''" [open]="!!info()" (closed)="info.set(null)">
+  @switch (info()) {
+    @case ('Help center') {
+      <p>
+        Browse movies, open a title for details, and use My list to save your next watch. Sign in
+        with a verification code sent to your email or phone.
+      </p>
+    }
+    @case ('Privacy') {
+      <p>
+        Your watchlist is saved in this browser. Signing in sends your email address or phone number
+        to SHIN’s authentication service. An authentication token is stored in your browser after
+        verification.
+      </p>
+    }
+    @case ('Terms') {
+      <p>
+        This application displays the SHIN catalog. Streaming, billing, and third-party sign-in are
+        not yet available. Full service terms will be provided before those features launch.
+      </p>
+    }
+  }
+</shin-modal>

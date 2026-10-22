@@ -1,10 +1,16 @@
 export interface Profile {
   id: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  avatarKey?: string;
+  country?: string;
+}
+
+export interface CreateProfilePayload {
   username: string;
   firstName: string;
   lastName: string;
-  accountKey: string;
   country: string;
+  avatarKey?: string;
 }
-
-export type CreateProfilePayload = Omit<Profile, 'id' | 'accountKey'>;

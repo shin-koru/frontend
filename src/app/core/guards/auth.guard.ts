@@ -1,12 +1,19 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { StorageService } from '../services/storage.service';
+import { SessionService } from '../services/session.service';
+import { map } from 'rxjs';
 
-export const authGuard: CanActivateFn = () => {
-  const storageService = inject(StorageService);
+export const authGuard: CanActivateFn = (_route, state) => {
+  const session = inject(SessionService);
   const router = inject(Router);
 
-  if (storageService.getItem('token')) return true;
-
-  return router.createUrlTree(['auth', 'login'])
+  return session
+    .restore()
+    .pipe(
+      map(
+        (authenticated) =>
+          authenticated ||
+          router.createUrlTree(['/auth/login'], { queryParams: { returnUrl: state.url } }),
+      ),
+    );
 };

@@ -1,0 +1,51 @@
+<section class="feature" aria-labelledby="feature-title">
+  <div class="feature-copy">
+    @if (details()) {
+      <a class="eyebrow accent back-link" routerLink="/movies">← Back to movies</a>
+    } @else {
+      <p class="eyebrow accent">SHIN / FEATURED</p>
+    }
+    <h1 id="feature-title" class="feature-title">{{ movie().title }}</h1>
+    <p class="muted">
+      {{ movie().genre }}
+      @if (movie().year) {
+        · {{ movie().year }}
+      }
+      @if (movie().duration) {
+        · {{ movie().duration }}
+      }
+      @if (movie().classification) {
+        · {{ movie().classification }}
+      }
+    </p>
+    @if (movie().description) {
+      <p class="feature-description muted">{{ movie().description }}</p>
+    }
+    <div class="feature-actions">
+      <button shinButton (click)="playback.open(movie())">
+        <span aria-hidden="true">▶</span> Watch now</button
+      ><button
+        shinButton
+        variant="secondary"
+        [attr.aria-pressed]="watchlist.has(movie().slug)"
+        (click)="watchlist.toggle(movie().slug)"
+      >
+        {{ watchlist.has(movie().slug) ? '✓ In my list' : '+ My list' }}
+      </button>
+    </div>
+  </div>
+  <div class="feature-poster" [style.background-color]="movie().color">
+    @if (posterUrl() && failedPoster() !== posterUrl()) {
+      <img
+        class="content-poster-image"
+        [src]="posterUrl()"
+        [alt]="movie().title + ' poster'"
+        (error)="failedPoster.set(posterUrl())"
+      />
+    } @else {
+      <img src="/assets/figma/poster-orb.svg" alt="" width="130" height="130" /><strong>{{
+        movie().title
+      }}</strong>
+    }
+  </div>
+</section>

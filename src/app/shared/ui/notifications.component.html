@@ -1,0 +1,23 @@
+@if (notice(); as message) {
+  <aside class="notification" [attr.role]="message.severity === 'error' ? 'alert' : 'status'">
+    <div>
+      <strong>{{ message.summary }}</strong>
+      <p>{{ message.detail }}</p>
+    </div>
+    <button class="text-button" aria-label="Dismiss notification" (click)="notice.set(null)">
+      ×
+    </button>
+  </aside>
+}
+@if (confirmation(); as request) {
+  <shin-modal [open]="true" [heading]="request.header || 'Confirm action'" (closed)="reject()"
+    ><div class="stack">
+      <p>{{ request.message }}</p>
+      <div class="dialog-actions">
+        <button shinButton variant="secondary" (click)="reject()">
+          {{ request.rejectLabel || 'Cancel' }}</button
+        ><button shinButton (click)="accept()">{{ request.acceptLabel || 'Confirm' }}</button>
+      </div>
+    </div></shin-modal
+  >
+}
