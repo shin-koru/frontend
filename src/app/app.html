@@ -12,13 +12,24 @@
       <p role="alert">{{ playback.error() }}</p>
       <button type="button" (click)="playback.retry()">Retry playback</button>
     }
+    @if (playback.progressError()) {
+      <p role="status" class="field-error">{{ playback.progressError() }}</p>
+      @if (playback.canRetryProgress()) {
+        <button type="button" (click)="playback.retryProgress()">Retry saving progress</button>
+      }
+    }
+    @if (playback.completed()) {
+      <button type="button" (click)="playback.replay()">Watch from the beginning</button>
+    }
     @if (playback.url()) {
       <video
         #player
         #adaptive="adaptiveVideo"
-        (timeupdate)="playback.checkExpiry(player)"
+        (timeupdate)="playback.timeUpdated(player)"
+        (pause)="playback.paused(player)"
+        (ended)="playback.ended(player)"
         (seeking)="playback.checkExpiry(player)"
-        (play)="playback.checkExpiry(player)"
+        (play)="playback.played(player)"
         (loadedmetadata)="playback.loaded(player)"
         (error)="playback.failed(player)"
         class="movie-player"

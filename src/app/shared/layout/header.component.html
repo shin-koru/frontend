@@ -11,6 +11,9 @@
     >
     <a routerLink="/movies" routerLinkActive="active" ariaCurrentWhenActive="page">Movies</a>
     <a routerLink="/plans" routerLinkActive="active" ariaCurrentWhenActive="page">Plans</a>
+    <a routerLink="/watch-history" routerLinkActive="active" ariaCurrentWhenActive="page"
+      >History</a
+    >
     <a class="series-link" routerLink="/movies" [queryParams]="{ type: 'series' }">Series</a>
     <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">My list</a>
   </nav>
@@ -41,6 +44,7 @@
     <a routerLink="/plans">Plans / Subscription</a><a routerLink="/">Home</a
     ><a routerLink="/movies">Movies</a
     ><a routerLink="/movies" [queryParams]="{ type: 'series' }">Series</a
-    ><a routerLink="/profile">My list / Profile</a><a routerLink="/auth/login">Sign in</a>
+    ><a routerLink="/watch-history">Watch history</a><a routerLink="/profile">My list / Profile</a
+    ><a routerLink="/auth/login">Sign in</a>
   </nav>
 }

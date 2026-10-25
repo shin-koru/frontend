@@ -4,6 +4,12 @@ import { adminGuard } from '../../core/services/admin.service';
 
 export const movieRoutes: Routes = [
   {
+    path: 'watch-history',
+    canActivate: [authGuard],
+    title: 'Watch history — SHIN',
+    loadComponent: () => import('./pages/history.component').then((m) => m.HistoryComponent),
+  },
+  {
     path: 'admin/media',
     canActivate: [authGuard, adminGuard],
     title: 'Admin Studio — SHIN',

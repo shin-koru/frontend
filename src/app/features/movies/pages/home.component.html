@@ -42,6 +42,9 @@
       }
     </section>
   }
+  @if (catalog.session.token()) {
+    <shin-activity-list mode="continue" [compact]="true" />
+  }
   <section class="surface promo">
     <h2>A world of cinema.<br />One place to call home.</h2>
     <a shinButton variant="secondary" routerLink="/movies">Explore movies</a>

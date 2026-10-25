@@ -1,3 +1,4 @@
+import { EpisodesComponent } from './episodes.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,7 +18,7 @@ import { ContentStore } from '../state/content.store';
 import { Movie } from '../model/movie.model';
 
 @Component({
-  imports: [FeatureComponent, MovieCardComponent, RouterLink, ButtonDirective],
+  imports: [EpisodesComponent, FeatureComponent, MovieCardComponent, RouterLink, ButtonDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './details.component.html',
 })

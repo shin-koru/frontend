@@ -1,3 +1,4 @@
+import { ActivityListComponent } from './activity-list.component';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FeatureComponent } from '../../../shared/ui/feature.component';
@@ -6,7 +7,13 @@ import { ButtonDirective } from '../../../shared/ui/button.directive';
 import { ContentStore } from '../state/content.store';
 
 @Component({
-  imports: [FeatureComponent, MovieCardComponent, RouterLink, ButtonDirective],
+  imports: [
+    ActivityListComponent,
+    FeatureComponent,
+    MovieCardComponent,
+    RouterLink,
+    ButtonDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.component.html',
 })

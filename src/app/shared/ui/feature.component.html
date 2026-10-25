@@ -22,15 +22,29 @@
       <p class="feature-description muted">{{ movie().description }}</p>
     }
     <div class="feature-actions">
-      <button shinButton (click)="playback.open(movie())">
-        <span aria-hidden="true">▶</span> Watch now</button
-      ><button
+      @if (movie().type === 'series') {
+        <a shinButton [routerLink]="['/movies', movie().slug]" fragment="episodes"
+          >Choose an episode</a
+        >
+      } @else {
+        <button shinButton (click)="playback.open(movie())">
+          <span aria-hidden="true">▶</span> Watch now
+        </button>
+      }
+      <button
         shinButton
         variant="secondary"
         [attr.aria-pressed]="watchlist.has(movie().slug)"
+        [disabled]="watchlist.busy(movie().slug)"
         (click)="watchlist.toggle(movie().slug)"
       >
-        {{ watchlist.has(movie().slug) ? '✓ In my list' : '+ My list' }}
+        {{
+          watchlist.busy(movie().slug)
+            ? 'Saving…'
+            : watchlist.has(movie().slug)
+              ? '✓ In my list'
+              : '+ My list'
+        }}
       </button>
     </div>
   </div>

@@ -1,0 +1,162 @@
+<section
+  class="movie-section activity-section"
+  [attr.aria-label]="
+    mode() === 'favorites'
+      ? 'Favorites'
+      : mode() === 'history'
+        ? 'Watch history'
+        : 'Continue Watching'
+  "
+>
+  <div class="activity-heading">
+    <h2>
+      {{
+        mode() === 'favorites'
+          ? 'Saved for a great night in'
+          : mode() === 'history'
+            ? 'Watch history'
+            : 'Continue Watching'
+      }}
+    </h2>
+    @if (mode() === 'history' && items().length) {
+      <button shinButton variant="secondary" (click)="confirming.set(true)" [disabled]="deleting()">
+        Clear history
+      </button>
+    }
+    @if (compact()) {
+      <a routerLink="/watch-history">View all activity →</a>
+    }
+  </div>
+  @if (mode() === 'favorites' && favorites.notice()) {
+    <p role="status" class="muted">{{ favorites.notice() }}</p>
+  }
+  @if (confirming()) {
+    <div class="surface stack activity-confirm" role="alert">
+      <h3>Clear your watch history?</h3>
+      <p>
+        Your viewing history and saved positions will be removed. Favorites will stay in your list.
+      </p>
+      <div class="feature-actions">
+        <button shinButton (click)="clear()" [disabled]="deleting()">
+          {{ deleting() ? 'Clearing…' : 'Clear all history' }}</button
+        ><button
+          shinButton
+          variant="secondary"
+          (click)="confirming.set(false)"
+          [disabled]="deleting()"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+  @if (error() || (mode() === 'favorites' && favorites.error())) {
+    <div role="alert" class="field-error">
+      <p>{{ error() || 'Your favorites couldn’t load.' }}</p>
+      <button
+        shinButton
+        variant="secondary"
+        (click)="mode() === 'favorites' ? favorites.load(true) : load(true)"
+      >
+        Try again
+      </button>
+    </div>
+  }
+  <div class="activity-grid">
+    @for (item of entries(); track item.id) {
+      <article class="surface activity-card stack">
+        @if (label(item)) {
+          <p class="eyebrow accent">{{ label(item) }}</p>
+        }
+        <h3>
+          <a [routerLink]="['/movies', item.parentContentId || item.contentId]">{{ item.title }}</a>
+        </h3>
+        @if (mode() !== 'favorites') {
+          <p class="muted">
+            {{
+              item.status === 'AUTHORIZED'
+                ? 'Opened · no progress reported'
+                : item.completedAt
+                  ? 'Completed'
+                  : 'Saved at ' + position(item)
+            }}
+            @if (item.lastWatchedAt || item.startedAt) {
+              <span> · {{ item.lastWatchedAt || item.startedAt | date: 'mediumDate' }}</span>
+            }
+          </p>
+          @if (item.durationSeconds && item.status !== 'AUTHORIZED') {
+            <progress
+              [value]="percent(item)"
+              max="100"
+              [attr.aria-label]="item.title + ' progress'"
+            ></progress>
+          }
+          <div class="feature-actions">
+            <button shinButton (click)="playback.openActivity(item)">
+              {{ mode() === 'continue' ? 'Resume' : 'Watch again' }}
+            </button>
+            @if (mode() === 'continue') {
+              <button
+                class="text-button"
+                (click)="remove(item)"
+                [disabled]="deleting()"
+                [attr.aria-label]="'Remove ' + item.title + ' from Continue Watching'"
+              >
+                Remove
+              </button>
+            }
+          </div>
+        } @else {
+          <a shinButton variant="secondary" [routerLink]="['/movies', item.contentId]"
+            >View title</a
+          >
+          <button
+            class="text-button"
+            (click)="favorites.toggle(item.contentId)"
+            [disabled]="favorites.busy(item.contentId)"
+            [attr.aria-label]="'Remove ' + item.title + ' from favorites'"
+          >
+            {{ favorites.busy(item.contentId) ? 'Saving…' : 'Remove from list' }}
+          </button>
+        }
+      </article>
+    }
+  </div>
+  @if (loading() || (mode() === 'favorites' && favorites.loading())) {
+    <p role="status" class="muted">
+      Loading your {{ mode() === 'favorites' ? 'saved titles' : 'activity' }}…
+    </p>
+  } @else if (!entries().length && !error() && !(mode() === 'favorites' && favorites.error())) {
+    <div class="surface empty-state">
+      <h3>
+        {{
+          mode() === 'favorites'
+            ? 'Your next great watch starts here.'
+            : mode() === 'history'
+              ? 'Your viewing story starts here.'
+              : 'Ready for your next story?'
+        }}
+      </h3>
+      <p class="muted">
+        {{
+          mode() === 'favorites'
+            ? 'Save movies and series to My list and find them here on any device.'
+            : mode() === 'history'
+              ? 'Titles you open will appear here. Your saved positions stay separate from each viewing attempt.'
+              : 'Unfinished titles will appear here once you start watching.'
+        }}
+      </p>
+      <a shinButton variant="secondary" routerLink="/movies">Explore movies</a>
+    </div>
+  }
+  @if (!compact() && (mode() === 'favorites' ? favorites.hasMore() : more())) {
+    <button
+      shinButton
+      variant="secondary"
+      (click)="mode() === 'favorites' ? favorites.load() : load()"
+      [disabled]="loading() || favorites.loading()"
+    >
+      Load more
+    </button>
+  }
+</section>

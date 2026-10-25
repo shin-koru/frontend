@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { SessionService } from '../../../core/services/session.service';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -20,7 +22,11 @@ describe('Playback authorization client', () => {
   };
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: SessionService, useValue: { token: signal(null) } },
+      ],
     });
     service = TestBed.inject(PlaybackService);
     http = TestBed.inject(HttpTestingController);
@@ -37,6 +43,8 @@ describe('Playback authorization client', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({});
     request.flush({
+      sessionId: 'session-1',
+      resumePositionSeconds: 0,
       url: 'https://media.example/signed',
       format: 'mp4',
       expiresAt: new Date(Date.now() + 300000).toISOString(),
@@ -48,16 +56,23 @@ describe('Playback authorization client', () => {
     TestBed.tick();
     http
       .expectOne('/api/content/movie-id/playback')
-      .flush({}, { status: 403, statusText: 'Forbidden' });
+      .flush(
+        { sessionId: 'session-1', resumePositionSeconds: 0 },
+        { status: 403, statusText: 'Forbidden' },
+      );
     expect(service.error()).toContain('active subscription');
     expect(service.url()).toBe('');
     service.retry();
     TestBed.tick();
-    http.expectOne('/api/content/movie-id/playback').flush({
-      url: 'signed',
-      format: 'mp4',
-      expiresAt: new Date(Date.now() + 300000).toISOString(),
-    });
+    http
+      .expectOne('/api/content/movie-id/playback')
+      .flush({
+        sessionId: 'session-1',
+        resumePositionSeconds: 0,
+        url: 'signed',
+        format: 'mp4',
+        expiresAt: new Date(Date.now() + 300000).toISOString(),
+      });
     expect(service.error()).toBe('');
   });
   it('renews once, preserving seek position and paused state', () => {
@@ -67,7 +82,13 @@ describe('Playback authorization client', () => {
     TestBed.tick();
     http
       .expectOne('/api/content/movie-id/playback')
-      .flush({ url: 'first', format: 'mp4', expiresAt: new Date(now + 300000).toISOString() });
+      .flush({
+        sessionId: 'session-1',
+        resumePositionSeconds: 0,
+        url: 'first',
+        format: 'mp4',
+        expiresAt: new Date(now + 300000).toISOString(),
+      });
     now += 250000;
     const video = { currentTime: 123, paused: true } as HTMLVideoElement;
     service.checkExpiry(video);
@@ -75,7 +96,13 @@ describe('Playback authorization client', () => {
     TestBed.tick();
     http
       .expectOne('/api/content/movie-id/playback')
-      .flush({ url: 'second', format: 'mp4', expiresAt: new Date(now + 300000).toISOString() });
+      .flush({
+        sessionId: 'session-1',
+        resumePositionSeconds: 0,
+        url: 'second',
+        format: 'mp4',
+        expiresAt: new Date(now + 300000).toISOString(),
+      });
     video.currentTime = 0;
     service.loaded(video);
     expect(video.currentTime).toBe(123);
@@ -93,11 +120,15 @@ describe('Playback authorization client', () => {
   it('accepts HLS and stops delivery when a subscription is revoked', () => {
     service.open(movie);
     TestBed.tick();
-    http.expectOne('/api/content/movie-id/playback').flush({
-      url: 'https://media.example/hls/grant/master.m3u8',
-      format: 'hls',
-      expiresAt: new Date(Date.now() + 300000).toISOString(),
-    });
+    http
+      .expectOne('/api/content/movie-id/playback')
+      .flush({
+        sessionId: 'session-1',
+        resumePositionSeconds: 0,
+        url: 'https://media.example/hls/grant/master.m3u8',
+        format: 'hls',
+        expiresAt: new Date(Date.now() + 300000).toISOString(),
+      });
     expect(service.format()).toBe('hls');
     service.deliveryFailed(403, { currentTime: 12, paused: false } as HTMLVideoElement);
     expect(service.url()).toBe('');
@@ -111,7 +142,13 @@ describe('Playback authorization client', () => {
     TestBed.tick();
     http
       .expectOne('/api/content/movie-id/playback')
-      .flush({ url: 'first', format: 'hls', expiresAt: new Date(now + 10000).toISOString() });
+      .flush({
+        sessionId: 'session-1',
+        resumePositionSeconds: 0,
+        url: 'first',
+        format: 'hls',
+        expiresAt: new Date(now + 10000).toISOString(),
+      });
     now += 11000;
     const video = { currentTime: 42, paused: true } as HTMLVideoElement;
     service.deliveryFailed(401, video);
@@ -119,7 +156,13 @@ describe('Playback authorization client', () => {
     TestBed.tick();
     http
       .expectOne('/api/content/movie-id/playback')
-      .flush({ url: 'second', format: 'hls', expiresAt: new Date(now + 10000).toISOString() });
+      .flush({
+        sessionId: 'session-1',
+        resumePositionSeconds: 0,
+        url: 'second',
+        format: 'hls',
+        expiresAt: new Date(now + 10000).toISOString(),
+      });
     video.currentTime = 0;
     service.loaded(video);
     expect(video.currentTime).toBe(42);

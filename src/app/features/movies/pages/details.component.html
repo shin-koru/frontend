@@ -10,6 +10,9 @@
     </section>
   } @else if (movie(); as current) {
     <shin-feature [movie]="current" [details]="true" />
+    @if (current.type === 'series') {
+      <shin-episodes [contentId]="current.slug" />
+    }
     <nav class="tabs" aria-label="Movie information">
       @for (item of tabs; track item) {
         <button

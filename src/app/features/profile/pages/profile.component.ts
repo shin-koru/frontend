@@ -1,3 +1,4 @@
+import { ActivityListComponent } from '../../movies/pages/activity-list.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,14 +14,20 @@ import { Router, RouterLink } from '@angular/router';
 import { ModalComponent } from '../../../shared/ui/modal.component';
 import { ProfileStore } from '../state/profile.store';
 import { AuthStore } from '../../auth/state/auth.store';
-import { MovieCardComponent } from '../../../shared/ui/movie-card.component';
+
 import { ButtonDirective } from '../../../shared/ui/button.directive';
 import { WatchlistStore } from '../../movies/state/watchlist.store';
 import { UploadFieldComponent } from '../../../shared/ui/upload-field.component';
 import { MediaUrls } from '../../../core/uploads/media-urls.service';
 
 @Component({
-  imports: [MovieCardComponent, ButtonDirective, RouterLink, ModalComponent, UploadFieldComponent],
+  imports: [
+    ActivityListComponent,
+    ButtonDirective,
+    RouterLink,
+    ModalComponent,
+    UploadFieldComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile.component.html',
 })

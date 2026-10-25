@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { SessionService } from '../../core/services/session.service';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { MediaUrls } from '../../core/uploads/media-urls.service';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective } from './button.directive';
@@ -13,6 +22,7 @@ import { PlaybackService } from '../../features/movies/service/playback.service'
   templateUrl: './feature.component.html',
 })
 export class FeatureComponent {
+  private readonly session = inject(SessionService);
   private readonly media = inject(MediaUrls);
   readonly posterUrl = signal<string | undefined>(undefined);
   readonly failedPoster = signal<string | undefined>(undefined);
@@ -23,6 +33,8 @@ export class FeatureComponent {
   constructor() {
     effect((onCleanup) => {
       const movie = this.movie();
+      this.session.token();
+      untracked(() => this.watchlist.ensure(movie.slug));
       this.posterUrl.set(movie.posterUrl);
       if (movie.posterObjectKey) {
         const subscription = this.media

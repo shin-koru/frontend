@@ -20,12 +20,12 @@ export const routes: Routes = [
   },
   {
     path: '',
-    loadChildren: () =>
-      import('./features/subscriptions/subscriptions.routes').then((m) => m.subscriptionRoutes),
+    loadChildren: () => import('./features/movies/movies.routes').then((m) => m.movieRoutes),
   },
   {
     path: '',
-    loadChildren: () => import('./features/movies/movies.routes').then((m) => m.movieRoutes),
+    loadChildren: () =>
+      import('./features/subscriptions/subscriptions.routes').then((m) => m.subscriptionRoutes),
   },
   { path: '**', redirectTo: '' },
 ];
