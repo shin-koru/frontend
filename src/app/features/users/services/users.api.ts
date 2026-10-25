@@ -1,32 +1,32 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { User, UserPayload } from '../models/user.model';
+import { AdminUser, AdminUserFilter, AdminUserPage, UserRole } from '../models/user.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class UsersApi {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = '/api/users';
+  private readonly baseUrl = '/api/admin/users';
 
-  getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.baseUrl);
+  list(filter: AdminUserFilter, limit: number, offset: number) {
+    let params = new HttpParams().set('limit', limit).set('offset', offset);
+    if (filter.search.trim()) params = params.set('search', filter.search.trim());
+    if (filter.role) params = params.set('role', filter.role);
+    if (filter.blocked) params = params.set('blocked', filter.blocked);
+    return this.http.get<AdminUserPage>(this.baseUrl, { params });
   }
 
-  getById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/${id}`);
+  get(id: string) {
+    return this.http.get<AdminUser>(`${this.baseUrl}/${encodeURIComponent(id)}`);
   }
 
-  create(payload: UserPayload): Observable<User> {
-    return this.http.post<User>(this.baseUrl, payload);
+  setRole(id: string, role: UserRole) {
+    return this.http.patch<AdminUser>(`${this.baseUrl}/${encodeURIComponent(id)}/role`, { role });
   }
 
-  update(id: string, payload: UserPayload): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/${id}`, payload);
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  setBlocked(id: string, blocked: boolean) {
+    return this.http.post<AdminUser>(
+      `${this.baseUrl}/${encodeURIComponent(id)}/${blocked ? 'block' : 'unblock'}`,
+      {},
+    );
   }
 }

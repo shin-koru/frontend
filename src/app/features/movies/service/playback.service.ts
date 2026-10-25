@@ -2,6 +2,7 @@ import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http
 import { DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { Subscription, retry, timer, throwError } from 'rxjs';
 import { SILENT_HTTP_ERROR } from '../../../core/interceptors/http-context';
+import { DeviceService } from '../../../core/services/device.service';
 import { SessionService } from '../../../core/services/session.service';
 import { Movie } from '../model/movie.model';
 import {
@@ -34,6 +35,7 @@ export class PlaybackService {
   private readonly http = inject(HttpClient);
   private readonly activity = inject(ActivityApi);
   private readonly session = inject(SessionService);
+  private readonly device = inject(DeviceService);
   readonly movie = signal<Pick<Movie, 'slug' | 'title'> | null>(null);
   readonly url = signal('');
   readonly format = signal('mp4');
@@ -98,7 +100,9 @@ export class PlaybackService {
     this.authorization = this.http
       .post<Playback>(
         `/api/${this.kind === 'episode' ? 'episode' : 'content'}/${encodeURIComponent(movie.slug)}/playback`,
-        renew && this.attempt ? { sessionId: this.attempt.id } : {},
+        renew && this.attempt
+          ? { sessionId: this.attempt.id, deviceId: this.device.id() }
+          : { deviceId: this.device.id() },
         { context: new HttpContext().set(SILENT_HTTP_ERROR, true) },
       )
       .subscribe({
@@ -141,7 +145,11 @@ export class PlaybackService {
             this.attempt = undefined;
           }
           this.error.set(
-            error.status === 403
+            error.status === 429
+              ? typeof error.error?.message === 'string'
+                ? error.error.message
+                : 'Too many devices are streaming on this account. Stop playback on another device and retry.'
+              : error.status === 403
               ? 'An active subscription is required to watch this title.'
               : error.status === 401
                 ? 'Sign in again to watch this title.'

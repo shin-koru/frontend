@@ -1,14 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { ModalComponent } from './modal.component';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { ToastService } from '../../core/services/toast.service';
 import { ButtonDirective } from './button.directive';
-
-interface Notice {
-  summary?: string;
-  detail?: string;
-  severity?: string;
-}
+import { ModalComponent } from './modal.component';
 
 @Component({
   selector: 'shin-notifications',
@@ -17,24 +11,17 @@ interface Notice {
   templateUrl: './notifications.component.html',
 })
 export class NotificationsComponent {
-  private readonly messages = inject(MessageService);
-  private readonly confirmations = inject(ConfirmationService);
-  readonly notice = signal<Notice | null>(null);
-  readonly confirmation = toSignal(this.confirmations.requireConfirmation$);
-  constructor() {
-    this.messages.messageObserver
-      .pipe(takeUntilDestroyed())
-      .subscribe((message) =>
-        this.notice.set(Array.isArray(message) ? message[message.length - 1] : message),
-      );
-    this.messages.clearObserver.pipe(takeUntilDestroyed()).subscribe(() => this.notice.set(null));
+  private readonly toasts = inject(ToastService);
+  private readonly confirmations = inject(ConfirmService);
+  readonly notice = this.toasts.notice;
+  readonly confirmation = this.confirmations.pending;
+  dismiss(): void {
+    this.toasts.clear();
   }
   accept(): void {
-    this.confirmation()?.accept?.();
-    this.confirmations.close();
+    this.confirmations.answer(true);
   }
   reject(): void {
-    this.confirmation()?.reject?.();
-    this.confirmations.close();
+    this.confirmations.answer(false);
   }
 }

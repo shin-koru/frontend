@@ -1,0 +1,99 @@
+<main id="main-content" class="users-page">
+  <p class="eyebrow">ADMINISTRATION</p>
+  <h1>Users</h1>
+  <p>Find accounts, change who can administer SHIN, and block accounts that should lose access.</p>
+  <form
+    class="filters"
+    role="search"
+    (submit)="$event.preventDefault(); search(query.value, role.value, status.value)"
+  >
+    <label
+      >Search<input
+        #query
+        type="search"
+        maxlength="100"
+        placeholder="Email or phone"
+        [value]="users.filter().search"
+    /></label>
+    <label
+      >Role<select #role>
+        <option value="">All roles</option>
+        <option value="CLIENT">Viewers</option>
+        <option value="ADMIN">Administrators</option>
+      </select></label
+    >
+    <label
+      >Status<select #status>
+        <option value="">All accounts</option>
+        <option value="false">Active</option>
+        <option value="true">Blocked</option>
+      </select></label
+    >
+    <button type="submit">Apply</button>
+  </form>
+
+  @if (users.loading() && users.items().length === 0) {
+    <p role="status">Loading users…</p>
+  } @else if (users.error()) {
+    <p role="alert">{{ users.error() }}</p>
+    <button (click)="users.load()">Retry</button>
+  } @else {
+    <p role="status" class="count">
+      {{ users.total() }} {{ users.total() === 1 ? 'account' : 'accounts' }}
+    </p>
+    <ul class="user-list">
+      @for (user of users.items(); track user.id) {
+        <li [class.blocked]="user.isBlocked">
+          <a class="identity" [routerLink]="['/admin/users', user.id]">
+            <strong>{{ user.email || user.phone || 'No contact details' }}</strong>
+            @if (user.email && user.phone) {
+              <span>{{ user.phone }}</span>
+            }
+            <span class="meta">Joined {{ user.createdAt | date: 'mediumDate' }}</span>
+          </a>
+          <div class="badges">
+            <span class="badge" [class.admin]="user.role === 'ADMIN'">{{ roles[user.role] }}</span>
+            @if (user.isBlocked) {
+              <span class="badge danger">Blocked</span>
+            }
+          </div>
+          <div class="actions">
+            @if (user.id === me()) {
+              <span class="meta">This is you</span>
+            } @else {
+              <button
+                [disabled]="users.saving() === user.id"
+                (click)="users.setRole(user, user.role === 'ADMIN' ? 'CLIENT' : 'ADMIN')"
+              >
+                {{ user.role === 'ADMIN' ? 'Remove admin' : 'Make admin' }}
+              </button>
+              <button
+                [class.danger]="!user.isBlocked"
+                [disabled]="users.saving() === user.id"
+                (click)="users.setBlocked(user, !user.isBlocked)"
+              >
+                {{ user.isBlocked ? 'Unblock' : 'Block' }}
+              </button>
+            }
+          </div>
+        </li>
+      } @empty {
+        <li class="empty">No users match these filters.</li>
+      }
+    </ul>
+    @if (users.total() > pageSize) {
+      <nav class="pagination" aria-label="Pages">
+        <button [disabled]="users.offset() === 0" (click)="users.load(users.offset() - pageSize)">
+          Previous
+        </button>
+        <span>Page {{ page() }} of {{ pages() }}</span>
+        <button
+          [disabled]="users.offset() + pageSize >= users.total()"
+          (click)="users.load(users.offset() + pageSize)"
+        >
+          Next
+        </button>
+      </nav>
+    }
+  }
+</main>

@@ -1,0 +1,65 @@
+<main id="main-content" class="users-page">
+  <a class="back" routerLink="/admin/users">← All users</a>
+  @if (users.loading()) {
+    <p role="status">Loading user…</p>
+  } @else if (users.error()) {
+    <p role="alert">{{ users.error() }}</p>
+  } @else if (users.selected(); as user) {
+    <p class="eyebrow">USER</p>
+    <h1>{{ user.email || user.phone || 'No contact details' }}</h1>
+    <div class="badges">
+      <span class="badge" [class.admin]="user.role === 'ADMIN'">{{ roles[user.role] }}</span>
+      @if (user.isBlocked) {
+        <span class="badge danger">Blocked</span>
+      }
+    </div>
+    <dl class="details">
+      <dt>Email</dt>
+      <dd>
+        {{ user.email || '—' }}
+        @if (user.email) {
+          <span class="meta">{{ user.isEmailVerified ? 'verified' : 'not verified' }}</span>
+        }
+      </dd>
+      <dt>Phone</dt>
+      <dd>
+        {{ user.phone || '—' }}
+        @if (user.phone) {
+          <span class="meta">{{ user.isPhoneVerified ? 'verified' : 'not verified' }}</span>
+        }
+      </dd>
+      <dt>Joined</dt>
+      <dd>{{ user.createdAt | date: 'medium' }}</dd>
+      @if (user.isBlocked) {
+        <dt>Blocked</dt>
+        <dd>{{ user.blockedAt | date: 'medium' }}</dd>
+      }
+      <dt>User ID</dt>
+      <dd class="reference">{{ user.id }}</dd>
+    </dl>
+    @if (user.id === me()) {
+      <p class="meta">You can't change your own role or block your own account.</p>
+    } @else {
+      <div class="actions">
+        <button
+          [disabled]="users.saving() === user.id"
+          (click)="users.setRole(user, user.role === 'ADMIN' ? 'CLIENT' : 'ADMIN')"
+        >
+          {{ user.role === 'ADMIN' ? 'Remove admin role' : 'Make administrator' }}
+        </button>
+        <button
+          [class.danger]="!user.isBlocked"
+          [disabled]="users.saving() === user.id"
+          (click)="users.setBlocked(user, !user.isBlocked)"
+        >
+          {{ user.isBlocked ? 'Unblock account' : 'Block account' }}
+        </button>
+      </div>
+      @if (!user.isBlocked) {
+        <p class="meta">
+          Blocking signs the user out on every device and stops them from signing in again.
+        </p>
+      }
+    }
+  }
+</main>

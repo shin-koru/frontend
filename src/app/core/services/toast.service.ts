@@ -1,20 +1,27 @@
-import { inject, Injectable } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { Injectable, signal } from '@angular/core';
 
+export type ToastSeverity = 'success' | 'error' | 'warn' | 'info';
+
+export interface Toast {
+  severity: ToastSeverity;
+  summary?: string;
+  detail?: string;
+}
+
+/** One visible notification at a time; NotificationsComponent renders it. */
 @Injectable({
   providedIn: 'root',
 })
 export class ToastService {
-  private readonly messageService = inject(MessageService);
+  private readonly current = signal<Toast | null>(null);
+  readonly notice = this.current.asReadonly();
 
-  public showToast(
-    severity: 'success' | 'error' | 'warn' | 'info' = 'info',
-    summary?: string,
-    detail?: string,
-    key: string = 'toast',
-  ) {
-    this.messageService.clear();
-    this.messageService.add({ severity, summary, detail, key });
+  public showToast(severity: ToastSeverity = 'info', summary?: string, detail?: string) {
+    this.current.set({ severity, summary, detail });
+  }
+
+  public clear() {
+    this.current.set(null);
   }
 
   public showSuccessToast(detail?: string) {

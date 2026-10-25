@@ -1,38 +1,34 @@
-import { inject, Injectable } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
-import { ToastService } from './toast.service';
+import { Injectable, signal } from '@angular/core';
 
+export interface ConfirmRequest {
+  message: string;
+  header?: string;
+  acceptLabel?: string;
+  rejectLabel?: string;
+}
+
+interface PendingConfirm extends ConfirmRequest {
+  resolve: (accepted: boolean) => void;
+}
+
+/** Asks the user to confirm an action; NotificationsComponent shows the dialog. */
 @Injectable({
   providedIn: 'root',
 })
 export class ConfirmService {
-  private readonly confirmationPrimeng = inject(ConfirmationService);
-  private readonly toastService = inject(ToastService);
+  private readonly current = signal<PendingConfirm | null>(null);
+  readonly pending = this.current.asReadonly();
 
-  confirmDelete(event: Event) {
-    this.confirmationPrimeng.confirm({
-      target: event.target as EventTarget,
-      message: 'Do you want to delete this record?',
-      header: 'Danger Zone',
-      icon: 'pi pi-info-circle',
-      rejectLabel: 'Cancel',
+  confirm(request: ConfirmRequest): Promise<boolean> {
+    // A newer question replaces an unanswered one, which counts as cancelled.
+    this.current()?.resolve(false);
+    return new Promise<boolean>((resolve) => this.current.set({ ...request, resolve }));
+  }
 
-      rejectButtonProps: {
-        label: 'Cancel',
-        severity: 'secondary',
-        outlined: true,
-      },
-      acceptButtonProps: {
-        label: 'Delete',
-        severity: 'danger',
-      },
-
-      accept: () => {
-        this.toastService.showInfoToast('Record deleted');
-      },
-      reject: () => {
-        this.toastService.showWarnToast('You have rejected');
-      },
-    });
+  answer(accepted: boolean): void {
+    const pending = this.current();
+    if (!pending) return;
+    this.current.set(null);
+    pending.resolve(accepted);
   }
 }

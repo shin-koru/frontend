@@ -1,176 +1,116 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  catchError,
-  distinctUntilChanged,
-  EMPTY,
-  map,
-  Observable,
-  Subject,
-  switchMap,
-  tap,
-  throwError,
-} from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { User, UserPayload } from '../models/user.model';
+import { AdminUser, AdminUserFilter, ROLE_LABELS, UserRole } from '../models/user.model';
 import { UsersApi } from '../services/users.api';
 
-export interface UsersState {
-  users: User[];
-  selectedUser: User | null;
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-}
+export const PAGE_SIZE = 20;
 
-const initialState: UsersState = {
-  users: [],
-  selectedUser: null,
-  loading: false,
-  saving: false,
-  error: null,
-};
+const message = (error: HttpErrorResponse, fallback: string) =>
+  typeof error.error?.message === 'string' ? error.error.message : fallback;
 
-@Injectable({
-  providedIn: 'root',
-})
+/** List and detail state for the admin users pages; provided per page. */
+@Injectable()
 export class UsersStore {
   private readonly api = inject(UsersApi);
+  private readonly confirms = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private request?: Subscription;
 
-  private readonly stateSubject = new BehaviorSubject<UsersState>(initialState);
-  private readonly loadAll$ = new Subject<void>();
-  private readonly loadOne$ = new Subject<string>();
+  readonly items = signal<AdminUser[]>([]);
+  readonly selected = signal<AdminUser | null>(null);
+  readonly total = signal(0);
+  readonly offset = signal(0);
+  readonly loading = signal(false);
+  readonly error = signal('');
+  /** ID of the user whose role or block status is being changed. */
+  readonly saving = signal<string | null>(null);
+  readonly filter = signal<AdminUserFilter>({ search: '', role: '', blocked: '' });
 
-  readonly state$ = this.stateSubject.asObservable();
-  readonly users$ = this.state$.pipe(
-    map((state) => state.users),
-    distinctUntilChanged(),
-  );
-  readonly selectedUser$ = this.state$.pipe(
-    map((state) => state.selectedUser),
-    distinctUntilChanged(),
-  );
-  readonly loading$ = this.state$.pipe(
-    map((state) => state.loading),
-    distinctUntilChanged(),
-  );
-  readonly saving$ = this.state$.pipe(
-    map((state) => state.saving),
-    distinctUntilChanged(),
-  );
-  readonly error$ = this.state$.pipe(
-    map((state) => state.error),
-    distinctUntilChanged(),
-  );
-
-  constructor() {
-    this.loadAll$
-      .pipe(
-        tap(() => this.patch({ loading: true, error: null })),
-        switchMap(() =>
-          this.api.getAll().pipe(
-            tap((users) => this.patch({ users, loading: false })),
-            catchError((error: HttpErrorResponse) => {
-              this.patch({ loading: false, error: error.message });
-              return EMPTY;
-            }),
-          ),
-        ),
-      )
-      .subscribe();
-
-    this.loadOne$
-      .pipe(
-        tap(() => this.patch({ loading: true, error: null })),
-        switchMap((id) =>
-          this.api.getById(id).pipe(
-            tap((selectedUser) => this.patch({ selectedUser, loading: false })),
-            catchError((error: HttpErrorResponse) => {
-              this.patch({ selectedUser: null, loading: false, error: error.message });
-              return EMPTY;
-            }),
-          ),
-        ),
-      )
-      .subscribe();
+  load(offset = this.offset()) {
+    this.request?.unsubscribe();
+    this.loading.set(true);
+    this.error.set('');
+    this.request = this.api.list(this.filter(), PAGE_SIZE, offset).subscribe({
+      next: (page) => {
+        this.items.set(page.items);
+        this.total.set(page.total);
+        this.offset.set(offset);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.error.set(message(error, 'Users could not be loaded.'));
+      },
+    });
   }
 
-  loadUsers(): void {
-    this.loadAll$.next();
+  applyFilter(filter: AdminUserFilter) {
+    this.filter.set(filter);
+    this.load(0);
   }
 
-  loadUser(id: string): void {
-    this.loadOne$.next(id);
+  open(id: string) {
+    this.request?.unsubscribe();
+    this.loading.set(true);
+    this.error.set('');
+    this.request = this.api.get(id).subscribe({
+      next: (user) => {
+        this.selected.set(user);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.error.set(
+          error.status === 404 ? 'This user does not exist.' : message(error, 'User could not be loaded.'),
+        );
+      },
+    });
   }
 
-  clearSelected(): void {
-    this.patch({ selectedUser: null });
+  async setRole(user: AdminUser, role: UserRole) {
+    if (user.role === role) return;
+    const accepted = await this.confirms.confirm({
+      header: 'Change role',
+      message: `Make ${this.name(user)} ${ROLE_LABELS[role].toLowerCase()}?`,
+      acceptLabel: 'Change role',
+    });
+    if (!accepted) return;
+    this.saving.set(user.id);
+    this.api.setRole(user.id, role).subscribe({
+      next: (updated) => this.updated(updated, `${this.name(updated)} is now ${ROLE_LABELS[role].toLowerCase()}.`),
+      error: () => this.saving.set(null),
+    });
   }
 
-  createUser(payload: UserPayload): Observable<User> {
-    this.patch({ saving: true, error: null });
-
-    return this.api.create(payload).pipe(
-      tap((user) => {
-        this.patch({
-          saving: false,
-          users: [...this.snapshot.users, user],
-          selectedUser: user,
-        });
-        this.toast.showSuccessToast('User created');
-      }),
-      catchError((error: HttpErrorResponse) => {
-        this.patch({ saving: false, error: error.message });
-        return throwError(() => error);
-      }),
-    );
+  async setBlocked(user: AdminUser, blocked: boolean) {
+    const accepted = await this.confirms.confirm({
+      header: blocked ? 'Block user' : 'Unblock user',
+      message: blocked
+        ? `Block ${this.name(user)}? They will be signed out everywhere and cannot sign in again until unblocked.`
+        : `Unblock ${this.name(user)}? They will be able to sign in again.`,
+      acceptLabel: blocked ? 'Block' : 'Unblock',
+    });
+    if (!accepted) return;
+    this.saving.set(user.id);
+    this.api.setBlocked(user.id, blocked).subscribe({
+      next: (updated) =>
+        this.updated(updated, `${this.name(updated)} has been ${blocked ? 'blocked' : 'unblocked'}.`),
+      // The error interceptor already shows the server's message.
+      error: () => this.saving.set(null),
+    });
   }
 
-  updateUser(id: string, payload: UserPayload): Observable<User> {
-    this.patch({ saving: true, error: null });
-
-    return this.api.update(id, payload).pipe(
-      tap((user) => {
-        this.patch({
-          saving: false,
-          selectedUser: user,
-          users: this.snapshot.users.map((item) => (item.id === id ? user : item)),
-        });
-        this.toast.showSuccessToast('User updated');
-      }),
-      catchError((error: HttpErrorResponse) => {
-        this.patch({ saving: false, error: error.message });
-        return throwError(() => error);
-      }),
-    );
+  name(user: AdminUser) {
+    return user.email || user.phone || 'this user';
   }
 
-  deleteUser(id: string): Observable<void> {
-    this.patch({ loading: true, error: null });
-
-    return this.api.delete(id).pipe(
-      tap(() => {
-        this.patch({
-          loading: false,
-          users: this.snapshot.users.filter((user) => user.id !== id),
-          selectedUser: this.snapshot.selectedUser?.id === id ? null : this.snapshot.selectedUser,
-        });
-        this.toast.showSuccessToast('User deleted');
-      }),
-      catchError((error: HttpErrorResponse) => {
-        this.patch({ loading: false, error: error.message });
-        return throwError(() => error);
-      }),
-    );
-  }
-
-  private get snapshot(): UsersState {
-    return this.stateSubject.getValue();
-  }
-
-  private patch(partial: Partial<UsersState>): void {
-    this.stateSubject.next({ ...this.snapshot, ...partial });
+  private updated(user: AdminUser, notice: string) {
+    this.saving.set(null);
+    this.items.update((items) => items.map((item) => (item.id === user.id ? user : item)));
+    if (this.selected()?.id === user.id) this.selected.set(user);
+    this.toast.showSuccessToast(notice);
   }
 }

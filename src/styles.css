@@ -827,6 +827,7 @@ shin-movie-card {
   }
   .desktop-nav,
   .header-tools .language,
+  .header-tools .admin-link,
   .profile-link {
     display: none !important;
   }

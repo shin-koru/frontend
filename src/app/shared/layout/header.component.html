@@ -19,8 +19,9 @@
   </nav>
   <nav class="header-tools" aria-label="Account and search">
     @if (admin.isAdmin()) {
-      <a routerLink="/admin/media">Studio</a>
-      <a routerLink="/admin/subscriptions">Memberships</a>
+      <a class="admin-link" routerLink="/admin/media">Studio</a>
+      <a class="admin-link" routerLink="/admin/subscriptions">Memberships</a>
+      <a class="admin-link" routerLink="/admin/users">Users</a>
     }
     <a routerLink="/movies" fragment="catalog-search">Search</a>
     <span class="language" lang="en" aria-label="Language: English">EN</span>
@@ -40,6 +41,7 @@
     @if (admin.isAdmin()) {
       <a routerLink="/admin/media">Movie uploads</a>
       <a routerLink="/admin/subscriptions">Manage subscriptions</a>
+      <a routerLink="/admin/users">Manage users</a>
     }
     <a routerLink="/plans">Plans / Subscription</a><a routerLink="/">Home</a
     ><a routerLink="/movies">Movies</a

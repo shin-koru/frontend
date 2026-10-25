@@ -1,35 +1,41 @@
 import { TestBed } from '@angular/core/testing';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { ToastService } from '../../core/services/toast.service';
 import { NotificationsComponent } from './notifications.component';
 
-describe('Native notification and legacy confirmation bridge', () => {
+describe('Notifications and confirmations', () => {
   let component: NotificationsComponent;
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [MessageService, ConfirmationService] });
+    TestBed.configureTestingModule({});
     component = TestBed.runInInjectionContext(() => new NotificationsComponent());
   });
-  it('displays and clears existing toast-service messages', () => {
-    const messages = TestBed.inject(MessageService);
-    messages.add({ severity: 'success', summary: 'Saved', detail: 'Your changes were saved.' });
+  it('displays and clears toast-service messages', () => {
+    const toasts = TestBed.inject(ToastService);
+    toasts.showSuccessToast('Your changes were saved.');
     expect(component.notice()?.detail).toBe('Your changes were saved.');
-    messages.clear();
+    component.dismiss();
     expect(component.notice()).toBeNull();
   });
-  it('runs the legacy accept callback once and closes the confirmation', () => {
-    const accept = vi.fn();
-    TestBed.inject(ConfirmationService).confirm({ message: 'Delete user?', accept });
+  it('resolves true once when accepted and closes the dialog', async () => {
+    const answer = TestBed.inject(ConfirmService).confirm({ message: 'Block user?' });
+    expect(component.confirmation()?.message).toBe('Block user?');
     component.accept();
-    expect(accept).toHaveBeenCalledOnce();
+    component.accept();
+    await expect(answer).resolves.toBe(true);
     expect(component.confirmation()).toBeNull();
   });
-  it('cancels a confirmation without accepting a destructive action', () => {
-    const accept = vi.fn();
-    const reject = vi.fn();
-    TestBed.inject(ConfirmationService).confirm({ message: 'Delete user?', accept, reject });
+  it('resolves false when cancelled', async () => {
+    const answer = TestBed.inject(ConfirmService).confirm({ message: 'Block user?' });
     component.reject();
-    expect(reject).toHaveBeenCalledOnce();
-    expect(accept).not.toHaveBeenCalled();
+    await expect(answer).resolves.toBe(false);
     expect(component.confirmation()).toBeNull();
+  });
+  it('cancels an unanswered question when a new one is asked', async () => {
+    const confirms = TestBed.inject(ConfirmService);
+    const first = confirms.confirm({ message: 'First?' });
+    confirms.confirm({ message: 'Second?' });
+    await expect(first).resolves.toBe(false);
+    expect(component.confirmation()?.message).toBe('Second?');
   });
 });

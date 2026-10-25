@@ -10,10 +10,13 @@ export class AdminService {
   private readonly http = inject(HttpClient);
   private readonly session = inject(SessionService);
   readonly isAdmin = signal(false);
+  /** Signed-in user's ID, so admin screens can hide actions on their own account. */
+  readonly userId = signal<string | null>(null);
   constructor() {
     effect((onCleanup) => {
       const token = this.session.token();
       this.isAdmin.set(false);
+      this.userId.set(null);
       if (token) {
         const sub = this.check().subscribe();
         onCleanup(() => sub.unsubscribe());
@@ -22,10 +25,11 @@ export class AdminService {
   }
   check() {
     return this.http
-      .get<{ role: string }>('/api/auth/me', {
+      .get<{ id: string; role: string }>('/api/auth/me', {
         context: new HttpContext().set(SILENT_HTTP_ERROR, true),
       })
       .pipe(
+        tap((user) => this.userId.set(user.id ?? null)),
         map((user) => user.role === 'ADMIN'),
         catchError(() => of(false)),
         tap((admin) => this.isAdmin.set(admin)),

@@ -58,7 +58,7 @@ describe('Playback progress and lifecycle', () => {
     player.checkExpiry(v);
     player.checkExpiry(v);
     const request = http.expectOne('/api/episode/title/playback');
-    expect(request.request.body).toEqual({ sessionId: 's1' });
+    expect(request.request.body).toEqual({ sessionId: 's1', deviceId: expect.any(String) });
     request.flush({
       sessionId: 's1',
       resumePositionSeconds: 20,
@@ -115,7 +115,7 @@ describe('Playback progress and lifecycle', () => {
     now += 250000;
     player.checkExpiry(video(99));
     const renewal = http.expectOne('/api/content/title/playback');
-    expect(renewal.request.body).toEqual({ sessionId: 's1' });
+    expect(renewal.request.body).toEqual({ sessionId: 's1', deviceId: expect.any(String) });
     renewal.flush({
       sessionId: 's1',
       resumePositionSeconds: 99,
@@ -125,7 +125,7 @@ describe('Playback progress and lifecycle', () => {
     });
     player.replay();
     const fresh = http.expectOne('/api/content/title/playback');
-    expect(fresh.request.body).toEqual({});
+    expect(fresh.request.body).toEqual({ deviceId: expect.any(String) });
     fresh.flush({
       sessionId: 's2',
       resumePositionSeconds: 0,

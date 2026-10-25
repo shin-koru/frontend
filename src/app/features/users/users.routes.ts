@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
-import { UserDetail } from './pages/user-detail/user-detail';
-import { UserForm } from './pages/user-form/user-form';
-import { UserList } from './pages/user-list/user-list';
+import { UserDetailComponent } from './pages/user-detail/user-detail.component';
+import { UserListComponent } from './pages/user-list/user-list.component';
 
 export const usersRoutes: Routes = [
-  { path: '', component: UserList },
-  { path: 'new', component: UserForm },
-  { path: ':id', component: UserDetail },
-  { path: ':id/edit', component: UserForm },
+  { path: '', component: UserListComponent, title: 'Users — SHIN' },
+  { path: ':id', component: UserDetailComponent, title: 'User — SHIN' },
 ];

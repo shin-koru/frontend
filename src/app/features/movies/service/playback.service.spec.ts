@@ -41,7 +41,7 @@ describe('Playback authorization client', () => {
     TestBed.tick();
     const request = http.expectOne('/api/content/movie-id/playback');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({});
+    expect(request.request.body).toEqual({ deviceId: expect.stringMatching(/^[A-Za-z0-9_-]{8,64}$/) });
     request.flush({
       sessionId: 'session-1',
       resumePositionSeconds: 0,
