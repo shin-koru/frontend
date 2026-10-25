@@ -123,6 +123,8 @@ export class AuthStore {
         this.toast.showSuccessToast('Logged out!');
       }),
       catchError((error: HttpErrorResponse) => {
+        // Never keep a local session after the user asked to log out.
+        this.session.clear();
         this.patch({ loading: false, error: error.message });
         return throwError(() => error);
       }),
